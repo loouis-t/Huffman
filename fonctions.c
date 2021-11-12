@@ -37,19 +37,19 @@ arbre getFilsDroit(arbre a) {
 
 arbre countOccurrences(FILE* fichier_source) {
     int caractere = 0;
-    int ascii;
     int first_c_occ = 1; //init à 1 pour ++ par la suite
-    arbre ab;
+    arbre ab = NULL;
 
     if (fichier_source != NULL) {
         //lire caractere par caractere
-        int first_c = (int)fgetc(fichier_source); //stocker premier caractere --> comparer par la suite
+        int first_c = (int)fgetc(fichier_source); //stocker premier caractere (ascii) --> comparer par la suite
         do {
-            caractere = fgetc(fichier_source); //récupérer caractere un par un texte
-            ascii = (int)caractere; //recupérer sa valeur selon ascii
-            if (ascii == first_c) {
-                first_c_occ++;
+            caractere = fgetc(fichier_source); //récupérer caractere un par un dans texte
+            if ((int)caractere == first_c) {
+                first_c_occ++; //compter occurrences caractere
             }
         } while(caractere != EOF); //EOF: End Of File
+        ab = creerArbre(first_c, first_c_occ, NULL, NULL);
     }
+    return ab;
 }

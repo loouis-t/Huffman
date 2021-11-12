@@ -2,7 +2,6 @@
 #include "fonctions.h"
 
 
-
 int main(int argc, char *argv[]){
     FILE* fichier_source = fopen("lorem.txt", "r");
     //iterations.

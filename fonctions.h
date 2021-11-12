@@ -4,11 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//definir structure caractere + son occurrence
+typedef struct caractere caractere;
+struct caractere {
+  int caractere;
+  int occurrence;
+};
+
 //definir structure noeud
 typedef struct noeud noeud;
 struct noeud {
-  int caractere; //vérifier type !
-  int occurrence;
+  caractere c;
   noeud* gauche;
   noeud* droit;
 };

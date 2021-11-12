@@ -5,16 +5,18 @@
 #include <stdlib.h>
 
 //definir structure caractere + son occurrence
-typedef struct caractere caractere;
-struct caractere {
+typedef struct element element;
+struct element {
   int caractere;
   int occurrence;
+  element* suivant;
 };
+typedef element* maillon; //associer maillon au pointeur de element
 
 //definir structure noeud
 typedef struct noeud noeud;
 struct noeud {
-  caractere c;
+  maillon maillon;
   noeud* gauche;
   noeud* droit;
 };
@@ -23,11 +25,14 @@ typedef noeud* arbre; //associer arbre au pointeur de noeud
 //definir les fonctions créées dans arbre.c
 int estVide(arbre a);
 int estFeuille(arbre a);
-int getCaractere(arbre a);
-int getOccurrence(arbre a);
-arbre creerArbre(int c, int occ, arbre fg, arbre fd);
+int getCaractere(maillon m);
+int getOccurrence(maillon m);
+arbre creerArbre(maillon m, arbre fg, arbre fd);
 arbre getFilsGauche(arbre a);
 arbre getFilsDroit(arbre a);
-arbre countOccurrences(FILE* fichier_source);
+maillon creerMaillon(int c, int occ, maillon element);
+maillon getMaillon(maillon m);
+void afficherListeMaillons(maillon m);
+maillon countOccurrences(FILE* fichier_source);
 
 #endif

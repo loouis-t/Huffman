@@ -3,8 +3,8 @@
 
 
 int main(int argc, char *argv[]){
-    FILE* fichier_source = fopen("lorem.txt", "r");
-    //iterations.
+    FILE* fichier_source = fopen("lorem.txt", "r"); // ouvrir fichier txt
+    afficherListeMaillons(m);
     fclose(fichier_source); //libérer
 }
 

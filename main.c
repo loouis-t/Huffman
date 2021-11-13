@@ -3,9 +3,13 @@
 
 
 int main(int argc, char *argv[]){
-    FILE* fichier_source = fopen("lorem.txt", "r"); // ouvrir fichier txt
-    afficherListeMaillons(m);
-    fclose(fichier_source); //libérer
+    char* texte = convertirFileChar("lorem.txt");       // convertir ce fichier en char
+    printf("OK 0\n");
+    maillon m = countOccurrences(texte);                // compter les occurrences de chaque caractere
+    printf("OK 1\n");
+    free(m);
+    /*afficherListeMaillons(m);                           // afficher la liste des maillons
+    printf("OK 2\n");*/
 }
 
 // COMPILATION:

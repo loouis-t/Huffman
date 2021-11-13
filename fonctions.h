@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 //definir structure caractere + son occurrence
 typedef struct element element;
@@ -31,8 +32,11 @@ arbre creerArbre(maillon m, arbre fg, arbre fd);
 arbre getFilsGauche(arbre a);
 arbre getFilsDroit(arbre a);
 maillon creerMaillon(int c, int occ, maillon element);
-maillon getMaillon(maillon m);
+maillon getMaillonSuivant(maillon m);
 void afficherListeMaillons(maillon m);
-maillon countOccurrences(FILE* fichier_source);
+int checkIfMaillon(char* chaine_caracteres, int c, int position);
+char* convertirFileChar(char* fileName);
+char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine, int position_distinct);
+maillon countOccurrences(char* chaine_caracteres);
 
 #endif

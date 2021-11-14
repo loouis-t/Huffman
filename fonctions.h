@@ -34,9 +34,9 @@ arbre getFilsDroit(arbre a);
 maillon creerMaillon(int c, int occ, maillon element);
 maillon getMaillonSuivant(maillon m);
 void afficherListeMaillons(maillon m);
-int checkIfMaillon(char* chaine_caracteres, int c, int position);
+int checkIfMaillon(int c, char* caracteres_distincts, int position);
 char* convertirFileChar(char* fileName);
-char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine, int position_distinct);
-maillon countOccurrences(char* chaine_caracteres);
+//char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine);
+maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, int position);
 
 #endif

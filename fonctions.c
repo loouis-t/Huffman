@@ -56,22 +56,20 @@ void afficherListeMaillons(maillon m) {
 }
 
 // vérifier si le caractere a deja ete checké
-int checkIfMaillon(char* chaine_caracteres, int c, int position) {
-    // peut etre amélioré: utliser iteratif pour eviter recalcul des caracteres distincts
-    char* caracteres_distincts = getDistinctsCaracters(chaine_caracteres, malloc(128), 0, 0); // connaitre les différents caracteres de la chaine
-    if (position > strlen(caracteres_distincts)) 
+int checkIfMaillon(int c, char* caracteres_distincts, int position) {
+    if (caracteres_distincts[position] == '\0')
     {
         return 0;
     }
-    else
+    else 
     {
         if (caracteres_distincts[position] == c)
         {
             return 1;
         }
-        else
+        else 
         {
-            return checkIfMaillon(caracteres_distincts, c, ++position);
+            return checkIfMaillon(c, caracteres_distincts, ++position);
         }
     }
 }
@@ -80,26 +78,25 @@ int checkIfMaillon(char* chaine_caracteres, int c, int position) {
 char* convertirFileChar(char* fileName) {
     FILE* fichier_source = fopen(fileName, "r");         // ouvrir fichier txt
     char* chaine_caracteres;
-    //int n = 0;
     if (fichier_source != NULL) 
     {
         fseek(fichier_source, 0, SEEK_END);                 // position dernier caractere de FILE
         long int length = ftell(fichier_source);
-        chaine_caracteres = malloc(length);  // allouer cette taille a char
+        chaine_caracteres = malloc(length);                 // allouer cette taille a char
         fseek(fichier_source, 0, SEEK_SET);                 // revenir au debut du fichier
-
-        fgets(chaine_caracteres, length, fichier_source);// placer FILE dans char*
+        fgets(chaine_caracteres, length, fichier_source);   // /!\ PB: s'arrete à '\n'
     }
     fclose(fichier_source);                                 // libérer FILE
+
+    printf("%ld\n", strlen(chaine_caracteres));
 
     return chaine_caracteres;
 }
 
-char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine, int position_distinct) {
+/*char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine) {
     int flag = 0; // le caractere n'a jamais ete vu
     if (position_chaine > strlen(chaine_caracteres))
     {
-        printf("%s\n", caracteres_distincts);
         return caracteres_distincts;
     }
     else
@@ -114,49 +111,46 @@ char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts,
         }
         if(flag == 0)       // si jamais vu ...
         {
-            caracteres_distincts[position_distinct] = chaine_caracteres[position_chaine];   // ajouter caractere chaine dans liste des caracteres distincts
-            ++position_distinct;
+            caracteres_distincts[strlen(caracteres_distincts)] = chaine_caracteres[position_chaine];   // ajouter caractere chaine dans liste des caracteres distincts
         }
-        return getDistinctsCaracters(chaine_caracteres, caracteres_distincts, ++position_chaine, position_distinct);
+        return getDistinctsCaracters(chaine_caracteres, caracteres_distincts, ++position_chaine);
     }
-}
+}*/
 
 // recuperer liste de maillons [caractere, occurrence]
-maillon countOccurrences(char* chaine_caracteres) {
-    int n = 0;
+maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, int position) {
+    int n = position;       // commencer les tests a la position du caractere temoin
     char current_c;
     char first_c;
-    int first_c_occ = 1; // init à 1 pour ++ par la suite
-    maillon m = NULL;
-
-    //printf("%s\n", chaine_caracteres);
+    int first_c_occ = 1;    // init à 1 pour ++ par la suite
 
     if (chaine_caracteres != NULL) {
-        //printf("%s\n", chaine_caracteres);
 
-        first_c = chaine_caracteres[n]; // stocker premier caractere (ascii) --> comparer par la suite
-        if (first_c == '\0')            // si c'est le signal de fin...
+        first_c = chaine_caracteres[position];  // stocker premier caractere (ascii) --> comparer par la suite
+        if (first_c == '\0')                    // si c'est le signal de fin...
         {
             return NULL;
         } 
         else
         {
-            if (checkIfMaillon(chaine_caracteres, first_c, 0) == 1)    // si le caractere n'a pas deja ete checké
+            if (checkIfMaillon(first_c, caracteres_distincts, 0) == 0)          // si le caractere n'a pas deja ete checké
             {
+                caracteres_distincts[strlen(caracteres_distincts)] = first_c;   // ajouter nouveau caractere a la liste des caracteres trouvables dans le texte
                 do {
                     current_c = chaine_caracteres[n++];     // récupérer caractere un par un dans texte
-                    if (current_c == first_c) {             // si le caractere observé est le meme que celui avec lequel on compare...
-                        first_c_occ++;                      // compter occurrences caractere
+                    if ((int)current_c == (int)first_c) {   // si le caractere observé est le meme que celui avec lequel on compare...
+                        ++first_c_occ;                      // compter occurrences caractere
                     }
                 } while(current_c != '\0');                 // '\0': signal de fin de chaine
+                return creerMaillon((int)first_c, (int)first_c_occ, countOccurrences(chaine_caracteres, caracteres_distincts, ++position)); // creer maillon en rappelant la fonction (recursivité)
             }
-            /*printf("%c", first_c);*/
-            memmove(chaine_caracteres, chaine_caracteres+1, strlen(chaine_caracteres));
-            return creerMaillon((int)first_c, first_c_occ, countOccurrences(chaine_caracteres)); // creer maillon en rappelant la fonction (recursivité)
+            else {
+                return countOccurrences(chaine_caracteres, caracteres_distincts, ++position);
+            }
         }
     }
     else
     {
-        return m;
+        return NULL;
     }
 }

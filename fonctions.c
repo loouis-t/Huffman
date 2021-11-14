@@ -48,7 +48,7 @@ int getOccurrence(maillon m) {
 }
 
 void afficherListeMaillons(maillon m) {
-    printf("%d : ", getCaractere(m));
+    printf("%c : ", getCaractere(m));
     printf("%d\n", getOccurrence(m));
     if (m->suivant != NULL) {
         afficherListeMaillons(m->suivant);
@@ -84,11 +84,12 @@ char* convertirFileChar(char* fileName) {
         long int length = ftell(fichier_source);
         chaine_caracteres = malloc(length);                 // allouer cette taille a char
         fseek(fichier_source, 0, SEEK_SET);                 // revenir au debut du fichier
-        fgets(chaine_caracteres, length, fichier_source);   // /!\ PB: s'arrete à '\n'
+        fgets(chaine_caracteres, length, fichier_source);   // /!\ PB: s'arrete à '\n' *************************** CORRIGER ***********************
+
+        printf("Taille 'fichier_source' : %ld\n", length);
+        printf("Taille 'chaine_caracteres' : %ld\n\n", strlen(chaine_caracteres));
     }
     fclose(fichier_source);                                 // libérer FILE
-
-    printf("%ld\n", strlen(chaine_caracteres));
 
     return chaine_caracteres;
 }

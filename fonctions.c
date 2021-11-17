@@ -61,13 +61,13 @@ int checkIfMaillon(int c, char* caracteres_distincts, int position) {
     {
         return 0;
     }
-    else 
+    else
     {
         if (caracteres_distincts[position] == c)
         {
             return 1;
         }
-        else 
+        else
         {
             return checkIfMaillon(c, caracteres_distincts, ++position);
         }
@@ -77,20 +77,31 @@ int checkIfMaillon(int c, char* caracteres_distincts, int position) {
 // convertir FILE* en char (plus simple a manipuler)
 char* convertirFileChar(char* fileName) {
     FILE* fichier_source = fopen(fileName, "r");         // ouvrir fichier txt
+    char* chaine_temp;
     char* chaine_caracteres;
-    if (fichier_source != NULL) 
+    if (fichier_source != NULL)
     {
         fseek(fichier_source, 0, SEEK_END);                 // position dernier caractere de FILE
         long int length = ftell(fichier_source);
-        chaine_caracteres = malloc(length);                 // allouer cette taille a char
+        chaine_caracteres = malloc(length);                 // allouer cette taille a chaine_caracteres
+        chaine_temp = malloc(length);                       // allouer cette taille a chaine_temp
         fseek(fichier_source, 0, SEEK_SET);                 // revenir au debut du fichier
-        fgets(chaine_caracteres, length, fichier_source);   // /!\ PB: s'arrete à '\n' *************************** CORRIGER ***********************
+        do {
+            fgets(chaine_temp, length, fichier_source);
+            strcat(chaine_caracteres, chaine_temp);
 
-        printf("Taille 'fichier_source' : %ld\n", length);
-        printf("Taille 'chaine_caracteres' : %ld\n\n", strlen(chaine_caracteres));
+            if (fgetc(fichier_source) == '\n')
+            {
+                chaine_caracteres[strlen(chaine_caracteres)] = '\n';
+            }
+
+            printf("Taille 'fichier_source' : %ld\n", length);
+            printf("Taille 'chaine_caracteres' : %ld\n\n", strlen(chaine_temp));
+        } while (fgetc(fichier_source) != EOF);
     }
     fclose(fichier_source);                                 // libérer FILE
-
+    printf("chaine: %s\n", chaine_caracteres);
+    free(chaine_temp);                                      // libérer chaine_temp
     return chaine_caracteres;
 }
 
@@ -102,7 +113,7 @@ char* convertirFileChar(char* fileName) {
     }
     else
     {
-        for (int i = 0; i < strlen(caracteres_distincts); ++i) 
+        for (int i = 0; i < strlen(caracteres_distincts); ++i)
         {
             if (chaine_caracteres[position_chaine] == caracteres_distincts[i])
             {
@@ -131,7 +142,7 @@ maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, in
         if (first_c == '\0')                    // si c'est le signal de fin...
         {
             return NULL;
-        } 
+        }
         else
         {
             if (checkIfMaillon(first_c, caracteres_distincts, 0) == 0)          // si le caractere n'a pas deja ete checké

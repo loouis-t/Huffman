@@ -47,8 +47,61 @@ int getOccurrence(maillon m) {
     return m->occurrence;
 }
 
+// trier liste de maillons dans tableau de maillons (maillon*)
+maillon* trierListeMaillons(maillon m) {
+    maillon* tab = malloc(128 * sizeof(maillon)); // 128 caracteres differents dans ASCII
+    int n = 0;
+    // init tableau pour tri
+    for (int i=0; i<128; ++i)
+    {
+        tab[i] = NULL;
+    }
+
+    // ajouter maillons dans tableau pour faciliter tri
+    do {
+        tab[n] = m;
+        ++n;
+        m = getMaillonSuivant(m);
+    } while(getMaillonSuivant(m) != NULL);
+
+    // trier tableau
+    maillon temp;
+    for (int i=0; i<128; ++i)
+    {
+        for (int j=0; j<128-i; ++j)
+        {
+            if (tab[j+1] != NULL)
+            {
+                if (getOccurrence(tab[j]) > getOccurrence(tab[j+1]))
+                {
+                    temp = tab[j];
+                    tab[j] = tab[j+1];
+                    tab[j+1] = temp;
+                } // *******************************PROBLEME: deux fois le dernier caractere***************************
+            }
+        }
+    }
+    free(temp);
+    free(m);
+    return tab;
+}
+
+// nécessite fonction 'trierListeMaillons'
+// init n = 0
+maillon convertirTabMaillon(maillon* tab, int n) {
+    if(tab[n+1] == NULL)
+    {
+        return creerMaillon(getCaractere(tab[n]), getOccurrence(tab[n]), NULL);
+    }
+    else
+    {
+        n++;
+        return creerMaillon(getCaractere(tab[n]), getOccurrence(tab[n]), convertirTabMaillon(tab, n));
+    }
+}
+
 void afficherListeMaillons(maillon m) {
-    printf("%c : ", getCaractere(m));
+    printf("%d : ", getCaractere(m));
     printf("%d\n", getOccurrence(m));
     if (m->suivant != NULL) {
         afficherListeMaillons(m->suivant);

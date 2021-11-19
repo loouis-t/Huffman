@@ -5,40 +5,39 @@
 #include <stdlib.h>
 #include <string.h>
 
-//definir structure caractere + son occurrence
+// on appelle [maillon]: [caractere; occurrence][ptr_maillon_suiv] 
+// definir structure caractere + son occurrence ou arbre contenant maillon1 + maillon2 + somme occurrences
+// cette structure peut accueillir a la fois des [maillons] et des [arbres]
 typedef struct element element;
 struct element {
   int caractere;
   int occurrence;
+  int somme_occurrences;
+  element* gauche;
+  element* droit;
   element* suivant;
 };
-typedef element* maillon; //associer maillon au pointeur de element
+typedef element* maillon;   // associer maillon au pointeur de element
 
-//definir structure noeud
-typedef struct noeud noeud;
-struct noeud {
-  maillon maillon;
-  noeud* gauche;
-  noeud* droit;
-};
-typedef noeud* arbre; //associer arbre au pointeur de noeud
+//  definir les fonctions créées dans arbre.c
 
-//definir les fonctions créées dans arbre.c
-int estVide(arbre a);
-int estFeuille(arbre a);
+//int estVide(arbre a);
+//int estFeuille(arbre a);
+// arbre creerArbre(int somme_occ, arbre fg, arbre fd);
+//char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine);
+
 int getCaractere(maillon m);
 int getOccurrence(maillon m);
-arbre creerArbre(maillon m, arbre fg, arbre fd);
-arbre getFilsGauche(arbre a);
-arbre getFilsDroit(arbre a);
-maillon creerMaillon(int c, int occ, maillon element);
+maillon getFilsGauche(maillon m);
+maillon getFilsDroit(maillon m);
+maillon creerMaillon(int c, int occ, int somme_occ, maillon fg, maillon fd, maillon element);
 maillon getMaillonSuivant(maillon m);
 void afficherListeMaillons(maillon m);
 maillon* trierListeMaillons(maillon m);
 maillon convertirTabMaillon(maillon* tab, int n);
 int checkIfMaillon(int c, char* caracteres_distincts, int position);
 char* convertirFileChar(char* fileName);
-//char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine);
 maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, int position);
+maillon construireArbreDeCodage(maillon m);
 
 #endif

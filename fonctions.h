@@ -34,6 +34,8 @@ arbre getFilsDroit(arbre a);
 maillon creerMaillon(int c, int occ, maillon element);
 maillon getMaillonSuivant(maillon m);
 void afficherListeMaillons(maillon m);
+maillon* trierListeMaillons(maillon m);
+maillon convertirTabMaillon(maillon* tab, int n);
 int checkIfMaillon(int c, char* caracteres_distincts, int position);
 char* convertirFileChar(char* fileName);
 //char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine);

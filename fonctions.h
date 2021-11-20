@@ -27,7 +27,7 @@ typedef element* maillon;   // associer maillon au pointeur de element
 //char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine);
 
 int getCaractere(maillon m);
-int getOccurrence(maillon m);
+int getOccurrence(maillon m, int somme_ou_occ);
 maillon getFilsGauche(maillon m);
 maillon getFilsDroit(maillon m);
 maillon creerMaillon(int c, int occ, int somme_occ, maillon fg, maillon fd, maillon element);
@@ -39,5 +39,6 @@ int checkIfMaillon(int c, char* caracteres_distincts, int position);
 char* convertirFileChar(char* fileName);
 maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, int position);
 maillon construireArbreDeCodage(maillon m);
+void parcoursPrefixe(maillon m, char* binaryCode, int cote);
 
 #endif

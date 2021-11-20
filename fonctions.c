@@ -54,14 +54,33 @@ int getCaractere(maillon m) {
     return m->caractere;
 }
 
-int getOccurrence(maillon m) {
-    if (m->somme_occurrences == -1)
+// pas tres beau mais:
+// somme_ou_occ: 
+//      --> 1         => retourne la somme des occurrences    (-1 si vide)
+//      --> 2         => retourne l'occurrence                (-1 si vide)
+//      --> sinon (0) => retourne celui different de -1
+int getOccurrence(maillon m, int somme_ou_occ) {
+    if (somme_ou_occ == 1)
     {
-        return m->occurrence;
+        return m->somme_occurrences;
     }
     else
     {
-        return m->somme_occurrences;
+        if (somme_ou_occ == 2)
+        {
+            return m->occurrence;
+        }
+        else
+        {
+            if (m->somme_occurrences == -1)
+            {
+                return m->occurrence;
+            }
+            else
+            {
+                return m->somme_occurrences;
+            }
+        }
     }
 }
 
@@ -87,7 +106,7 @@ maillon* trierListeMaillons(maillon m) {
     {
         for (int j=0; j<n-i; ++j)
         {
-            if (((tab[j] != NULL) && (tab[j+1] != NULL)) && (getOccurrence(tab[j]) > getOccurrence(tab[j+1])))
+            if (((tab[j] != NULL) && (tab[j+1] != NULL)) && (getOccurrence(tab[j], 0) > getOccurrence(tab[j+1], 0)))
             {
                 maillon temp = tab[j];
                 tab[j] = tab[j+1];
@@ -100,30 +119,37 @@ maillon* trierListeMaillons(maillon m) {
 }
 
 // nécessite fonction 'trierListeMaillons'
-// init n = -1
+// init n = 0
 // ************************************* PROBLEME: ++n impossible a passer en param ***************************************
 maillon convertirTabMaillon(maillon* tab, int n) {
-    if (tab[n] != NULL)
+    if (tab[n] == NULL) 
     {
-        if(tab[n+1] == NULL)
-        {
-            return NULL;
-        }
-        else
-        {
-            n++;
-            return creerMaillon(getCaractere(tab[n]), getOccurrence(tab[n]), -1, NULL, NULL, convertirTabMaillon(tab, n));
-        }
+        return NULL;
     }
     else
     {
-        return NULL;
+        if (tab[n+1] == NULL)
+        {
+            return creerMaillon(getCaractere(tab[n]), getOccurrence(tab[n], 2), getOccurrence(tab[n], 1), getFilsGauche(tab[n]), getFilsDroit(tab[n]), NULL);
+        }
+        else
+        {
+            ++n;
+            return creerMaillon(getCaractere(tab[n-1]), getOccurrence(tab[n-1], 2), getOccurrence(tab[n-1], 1), getFilsGauche(tab[n-1]), getFilsDroit(tab[n-1]), convertirTabMaillon(tab, n));
+        }
     }
 }
 
 void afficherListeMaillons(maillon m) {
-    printf("%c : ", getCaractere(m));
-    printf("%d\n", getOccurrence(m));
+    if (getCaractere(m) != -1)
+    {
+        printf("%d : ", getCaractere(m));
+    }
+    else 
+    {
+        printf("Somme des occurrences : ");
+    }
+    printf("%d\n", getOccurrence(m, 0));
     if (m->suivant != NULL) {
         afficherListeMaillons(m->suivant);
     }
@@ -177,6 +203,7 @@ char* convertirFileChar(char* fileName) {
     printf("chaine: %s\n", chaine_caracteres);
     free(chaine_temp);                                      // libérer chaine_temp
     return "fffffccccccccccccbbbbbbbbbbbbbddddddddddddddddeeeeeeeeeaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    //return chaine_caracteres;
 }
 
 /*char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine) {
@@ -245,15 +272,34 @@ maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, in
 maillon construireArbreDeCodage(maillon m) {
     if (getMaillonSuivant(m) == NULL)
     {
-        free(m);
-        return NULL;
+        return m;   // si un seul maillon restant: terminé-->arbre construit
     }
-    else 
+    else
     {
+        maillon next_m = getMaillonSuivant(m);                                              // retenir le maillon suivant               (lisibilité)
+        int somme_frequences = getOccurrence(m, 0) + getOccurrence(next_m, 0);              // additionner occurrences                  (lisibilité)
+        m = creerMaillon(-1, -1, somme_frequences, m, next_m, getMaillonSuivant(next_m));   // creer arbre avec deux premiers maillons
+        maillon m_sorted = convertirTabMaillon(trierListeMaillons(m), 0);                   // trier cette chaine de maillons
+        //printf("occ fg: %d\n", getOccurrence(getFilsGauche(m_sorted), 0));
+        return construireArbreDeCodage(m_sorted);                                           // recursivité: rappel fonction
+    }
+}
 
-        m = convertirTabMaillon(trierListeMaillons(m), 0);
-        maillon next_m = getMaillonSuivant(m);
-        int somme_frequences = getOccurrence(m) + getOccurrence(next_m);
-        return creerMaillon(-1, -1, somme_frequences, m, next_m, construireArbreDeCodage(getMaillonSuivant(next_m)));
+void parcoursPrefixe(maillon m, char* binaryCode, int cote) {
+    if (m != NULL)
+    {
+        binaryCode[strlen(binaryCode)] = cote;
+        binaryCode[strlen(binaryCode)+1] = '\0';
+        if (getCaractere(m) != -1) // si le premier noeud possede un caractere
+        {
+            printf("%c : %d : %s\n", getCaractere(m), getOccurrence(m, 2), binaryCode);
+            // NON FONCTIONNEL ICI
+        }
+        parcoursPrefixe(getFilsGauche(m), binaryCode, 48);
+        parcoursPrefixe(getFilsDroit(m), binaryCode, 49);
+        
+        /*printf("%d\n", getOccurrence(m, 0));
+        parcoursPrefixe(getFilsGauche(m), binaryCode, pos, cote);
+        parcoursPrefixe(getFilsDroit(m), binaryCode, pos, cote);*/
     }
 }

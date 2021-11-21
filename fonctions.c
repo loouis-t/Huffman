@@ -285,6 +285,58 @@ maillon construireArbreDeCodage(maillon m) {
     }
 }
 
+/*void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote) {
+    if (m != NULL)
+    {
+        binaryCode[pos++] = cote;
+        if (getCaractere(m) != -1)      // si le premier noeud possede un caractere
+        {
+            binaryCode[pos] = '\0';     // terminer chaine de maillons
+            printf("%c : %d : %s\n", getCaractere(m), getOccurrence(m, 2), binaryCode);
+            --pos;
+        }
+        parcoursPrefixe(getFilsGauche(m), binaryCode, pos, 48);
+        parcoursPrefixe(getFilsDroit(m), binaryCode, pos, 49);
+    } 
+    else 
+    {
+        binaryCode[pos] = '\0';
+    }
+}*/
+
+char SUCCESS[10];
+
+char* parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote, int c_recherche) {
+    //printf("%d : %s\n", pos, binaryCode);
+    if (m != NULL)
+    {
+        binaryCode[pos++] = cote;
+        if (getFilsGauche(m) == NULL && getFilsDroit(m) == NULL)
+        {
+            if (getCaractere(m) == c_recherche)
+            {
+                binaryCode[pos] = '\0';
+                strcpy(SUCCESS, binaryCode); // copier contenu pointeur dans variable globale SUCCESS
+                return binaryCode;
+            }
+            return binaryCode;
+        }
+        else
+        {
+            strcat(binaryCode, parcoursPrefixe(getFilsGauche(m), binaryCode, pos, 48, c_recherche));
+            strcat(binaryCode, parcoursPrefixe(getFilsDroit(m), binaryCode, pos, 49, c_recherche));
+
+            binaryCode[pos] = '\0';
+            return binaryCode;
+        }
+    }
+    else
+    {
+        binaryCode[pos+1] = '\0';
+        return binaryCode;
+    }
+}
+
 char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee) {
 
     if (getMaillonSuivant(liste_triee) != NULL)
@@ -302,29 +354,28 @@ char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee) 
     }
 }
 
-void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote) {
-    if (m != NULL)
+void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char* fileName) {
+    char* chaine_encodee = malloc(1000);
+    chaine_encodee[0] = '\0'; //debug
+    //sprintf(chaine_encodee, "%d%c%c", getOccurrence(arbre, 0), ',', '\0');      // convertir somme_occurrence (d'arbre complet) en char* + ajouter ',' + '\0'(signal fin de chaine)
+    //chaine_encodee = creerEnTeteHuffman(liste_triee, arbre, chaine_encodee);    // creer entete permettant decompression
+    //printf("entete: %s", chaine_encodee);
+
+    // encoder la chaine
+    //char* chaine_totale = parcoursPrefixe(arbre, malloc(10), -1, '\0', 'f');
+    //free(tmp);
+    for(int i=0; i<strlen(fichierChar); ++i)
     {
-        binaryCode[pos++] = cote;
-        if (getCaractere(m) != -1)      // si le premier noeud possede un caractere
-        {
-            binaryCode[pos] = '\0';     // terminer chaine de maillons
-            printf("%c : %d : %s\n", getCaractere(m), getOccurrence(m, 2), binaryCode);
-            --pos;
-        }
-        parcoursPrefixe(getFilsGauche(m), binaryCode, pos, 48);
-        parcoursPrefixe(getFilsDroit(m), binaryCode, pos, 49);
-    } 
-    else 
-    {
-        binaryCode[pos] = '\0';
+        char* tmp = parcoursPrefixe(arbre, malloc(10), -1, '\0', fichierChar[i]);
+        free(tmp);
+        strcat(chaine_encodee, SUCCESS);
     }
-}
+    printf("%s", chaine_encodee); // malloc(): invalid size (unsorted)
 
-
-void creerDocHuffman(maillon liste_triee, maillon arbre) {
-    char* init_ch = malloc(1000);
-    sprintf(init_ch, "%d%c%c", getOccurrence(arbre, 0), ',', '\0');    // convertir somme_occurrence (de l'arbre complet) en char* et ajouter ',' et '\0'(signal fin de chaine)
-    char* chaine_encodee = creerEnTeteHuffman(liste_triee, arbre, init_ch);
-    printf("%s\n", chaine_encodee);
+    FILE* fichier_compresse = fopen("essai_cmp.txt", "w");
+    if (fichier_compresse != NULL)
+    {
+        fputs(chaine_encodee, fichier_compresse);
+        fclose(fichier_compresse);
+    }
 }

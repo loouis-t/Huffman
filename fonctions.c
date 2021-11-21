@@ -369,8 +369,9 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
         char* tmp = parcoursPrefixe(arbre, malloc(10), -1, '\0', fichierChar[i]);
         free(tmp);
         strcat(chaine_encodee, SUCCESS);
+        //printf("%s\n", chaine_encodee);
     }
-    printf("%s", chaine_encodee); // malloc(): invalid size (unsorted)
+    printf("\n%s", chaine_encodee); // malloc(): invalid size (unsorted)
 
     FILE* fichier_compresse = fopen("essai_cmp.txt", "w");
     if (fichier_compresse != NULL)

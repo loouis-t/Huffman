@@ -285,21 +285,46 @@ maillon construireArbreDeCodage(maillon m) {
     }
 }
 
-void parcoursPrefixe(maillon m, char* binaryCode, int cote) {
+char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee) {
+
+    if (getMaillonSuivant(liste_triee) != NULL)
+    {
+        // convertir int en char* et concatener les infos voulues dans en-tete
+        char* chaine_temp = malloc(1000);
+        sprintf(chaine_temp, "%s%c%c%d%c%c", chaine_encodee, getCaractere(liste_triee), ':', getOccurrence(liste_triee, 0), ',', '\0'); 
+
+        return creerEnTeteHuffman(getMaillonSuivant(liste_triee), ab, chaine_temp);
+    }
+    else
+    {
+        chaine_encodee[strlen(chaine_encodee)-1] = '\n';
+        return chaine_encodee;
+    }
+}
+
+void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote) {
     if (m != NULL)
     {
-        binaryCode[strlen(binaryCode)] = cote;
-        binaryCode[strlen(binaryCode)+1] = '\0';
-        if (getCaractere(m) != -1) // si le premier noeud possede un caractere
+        binaryCode[pos++] = cote;
+        if (getCaractere(m) != -1)      // si le premier noeud possede un caractere
         {
+            binaryCode[pos] = '\0';     // terminer chaine de maillons
             printf("%c : %d : %s\n", getCaractere(m), getOccurrence(m, 2), binaryCode);
-            // NON FONCTIONNEL ICI
+            --pos;
         }
-        parcoursPrefixe(getFilsGauche(m), binaryCode, 48);
-        parcoursPrefixe(getFilsDroit(m), binaryCode, 49);
-        
-        /*printf("%d\n", getOccurrence(m, 0));
-        parcoursPrefixe(getFilsGauche(m), binaryCode, pos, cote);
-        parcoursPrefixe(getFilsDroit(m), binaryCode, pos, cote);*/
+        parcoursPrefixe(getFilsGauche(m), binaryCode, pos, 48);
+        parcoursPrefixe(getFilsDroit(m), binaryCode, pos, 49);
+    } 
+    else 
+    {
+        binaryCode[pos] = '\0';
     }
+}
+
+
+void creerDocHuffman(maillon liste_triee, maillon arbre) {
+    char* init_ch = malloc(1000);
+    sprintf(init_ch, "%d%c%c", getOccurrence(arbre, 0), ',', '\0');    // convertir somme_occurrence (de l'arbre complet) en char* et ajouter ',' et '\0'(signal fin de chaine)
+    char* chaine_encodee = creerEnTeteHuffman(liste_triee, arbre, init_ch);
+    printf("%s\n", chaine_encodee);
 }

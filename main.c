@@ -3,7 +3,7 @@
 
 int main(int argc, char *argv[]){
 
-    char* fichierChar = convertirFileChar("lorem.txt");
+    char* fichierChar = convertirFileChar("h2g2.txt");
     maillon m = countOccurrences(fichierChar, malloc(128), 0);                      // compter les occurrences de chaque caractere
     maillon m_sorted = convertirTabMaillon(trierListeMaillons(m), 0);               // trier liste chainée de maillons
     afficherListeMaillons(m_sorted);                                                // afficher

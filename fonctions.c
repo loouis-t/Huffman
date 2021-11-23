@@ -176,32 +176,18 @@ int checkIfMaillon(int c, char* caracteres_distincts, int position) {
 
 // convertir FILE* en char (plus simple a manipuler)
 char* convertirFileChar(char* fileName) {
-    FILE* fichier_source = fopen(fileName, "r");         // ouvrir fichier txt
-    char* chaine_temp;
+    FILE* fichier_source = fopen(fileName, "r");            // ouvrir fichier txt
     char* chaine_caracteres;
     if (fichier_source != NULL)
     {
         fseek(fichier_source, 0, SEEK_END);                 // position dernier caractere de FILE
-        long int length = ftell(fichier_source);
-        chaine_caracteres = malloc(length);                 // allouer cette taille a chaine_caracteres
-        chaine_temp = malloc(length);                       // allouer cette taille a chaine_temp
+        long int length = ftell(fichier_source);            // connaitre taille fichier_source
+        chaine_caracteres = malloc(length*sizeof(char*));   // allouer cette taille a chaine_caracteres
         fseek(fichier_source, 0, SEEK_SET);                 // revenir au debut du fichier
-        do {
-            fgets(chaine_temp, length, fichier_source);
-            strcat(chaine_caracteres, chaine_temp);
-
-            // si saut de ligne, le rajouter dans la chaine
-            while (fgetc(fichier_source) == '\n') {
-                chaine_caracteres[strlen(chaine_caracteres)] = '\n';
-            } 
-
-            printf("Taille 'fichier_source' : %ld\n", length);
-            printf("Taille 'chaine_caracteres' : %ld\n\n", strlen(chaine_temp));
-        } while (fgetc(fichier_source) != EOF);
+        fread(chaine_caracteres, length, sizeof(char*), fichier_source);    // recuperer texte de FILE* dans char*
     }
     fclose(fichier_source);                                 // libérer FILE
     printf("chaine: %s\n", chaine_caracteres);
-    free(chaine_temp);                                      // libérer chaine_temp
     return "fffffccccccccccccbbbbbbbbbbbbbddddddddddddddddeeeeeeeeeaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
     //return chaine_caracteres;
 }
@@ -304,9 +290,8 @@ maillon construireArbreDeCodage(maillon m) {
     }
 }*/
 
-char SUCCESS[10];
-
-char* parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote, int c_recherche) {
+char SUCCESS[10*sizeof(char*)];
+void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote, int c_recherche) {
     //printf("%d : %s\n", pos, binaryCode);
     if (m != NULL)
     {
@@ -317,66 +302,51 @@ char* parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote, int c_rech
             {
                 binaryCode[pos] = '\0';
                 strcpy(SUCCESS, binaryCode); // copier contenu pointeur dans variable globale SUCCESS
-                return binaryCode;
             }
-            return binaryCode;
         }
         else
         {
-            strcat(binaryCode, parcoursPrefixe(getFilsGauche(m), binaryCode, pos, 48, c_recherche));
-            strcat(binaryCode, parcoursPrefixe(getFilsDroit(m), binaryCode, pos, 49, c_recherche));
-
-            binaryCode[pos] = '\0';
-            return binaryCode;
+            parcoursPrefixe(getFilsGauche(m), binaryCode, pos, 48, c_recherche);
+            parcoursPrefixe(getFilsDroit(m), binaryCode, pos, 49, c_recherche);
         }
-    }
-    else
-    {
-        binaryCode[pos+1] = '\0';
-        return binaryCode;
     }
 }
 
 char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee) {
 
-    if (getMaillonSuivant(liste_triee) != NULL)
+    if (getMaillonSuivant(liste_triee) == NULL)
     {
-        // convertir int en char* et concatener les infos voulues dans en-tete
-        char* chaine_temp = malloc(1000);
-        sprintf(chaine_temp, "%s%c%c%d%c%c", chaine_encodee, getCaractere(liste_triee), ':', getOccurrence(liste_triee, 0), ',', '\0'); 
-
-        return creerEnTeteHuffman(getMaillonSuivant(liste_triee), ab, chaine_temp);
+        chaine_encodee[strlen(chaine_encodee)-1] = '.'; //remplacer derniere virgule par: .
+        return chaine_encodee;
     }
     else
     {
-        chaine_encodee[strlen(chaine_encodee)-1] = '\n';
-        return chaine_encodee;
+        // convertir int en char* et concatener les infos voulues dans en-tete
+        char* chaine_temp = malloc(1000);
+        sprintf(chaine_temp, "%s%d%d%d%d%d", chaine_encodee, getCaractere(liste_triee), ':', getOccurrence(liste_triee, 0), ',', '\0'); 
+
+        return creerEnTeteHuffman(getMaillonSuivant(liste_triee), ab, chaine_temp);
     }
 }
 
 void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char* fileName) {
-    char* chaine_encodee = malloc(1000);
-    chaine_encodee[0] = '\0'; //debug
-    //sprintf(chaine_encodee, "%d%c%c", getOccurrence(arbre, 0), ',', '\0');      // convertir somme_occurrence (d'arbre complet) en char* + ajouter ',' + '\0'(signal fin de chaine)
-    //chaine_encodee = creerEnTeteHuffman(liste_triee, arbre, chaine_encodee);    // creer entete permettant decompression
-    //printf("entete: %s", chaine_encodee);
+    char* chaine_encodee = malloc(100*strlen(fichierChar)*sizeof(char*));
+    /*sprintf(chaine_encodee, "%d%d%d", getOccurrence(arbre, 0), ',', '\0');      // convertir somme_occurrence (d'arbre complet) en char* + ajouter ',' + '\0'(signal fin de chaine)
+    chaine_encodee = creerEnTeteHuffman(liste_triee, arbre, chaine_encodee);    // creer entete permettant decompression
+    printf("entete: %s\n", chaine_encodee);*/
 
     // encoder la chaine
-    //char* chaine_totale = parcoursPrefixe(arbre, malloc(10), -1, '\0', 'f');
-    //free(tmp);
+    //parcoursPrefixe(arbre, malloc(10), -1, '\0', 'f');
     for(int i=0; i<strlen(fichierChar); ++i)
     {
-        char* tmp = parcoursPrefixe(arbre, malloc(10), -1, '\0', fichierChar[i]);
-        free(tmp);
+        parcoursPrefixe(arbre, malloc(100*sizeof(char*)), -1, '\0', fichierChar[i]);
         strcat(chaine_encodee, SUCCESS);
-        //printf("%s\n", chaine_encodee);
+        // printf("%s\n", chaine_encodee);
     }
-    printf("\n%s", chaine_encodee); // malloc(): invalid size (unsorted)
+    printf("%s\n", chaine_encodee); // malloc(): invalid size (unsorted)
 
-    FILE* fichier_compresse = fopen("essai_cmp.txt", "w");
-    if (fichier_compresse != NULL)
-    {
-        fputs(chaine_encodee, fichier_compresse);
-        fclose(fichier_compresse);
-    }
+    FILE* fichier_compresse = fopen("essai_cmp.bin", "wb"); // ******************ECRIT SUR UN OCTET au lieu de BIT********************
+    fwrite(&chaine_encodee, 1, strlen(chaine_encodee), fichier_compresse);
+    // fputs(chaine_encodee, fichier_compresse);
+    fclose(fichier_compresse);
 }

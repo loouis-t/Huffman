@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 // on appelle [maillon]: [caractere; occurrence][ptr_maillon_suiv] 
 // definir structure caractere + son occurrence ou arbre contenant maillon1 + maillon2 + somme occurrences

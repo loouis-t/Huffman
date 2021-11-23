@@ -189,7 +189,7 @@ char* convertirFileChar(char* fileName) {
     fclose(fichier_source);                                 // libérer FILE
     printf("chaine: %s\n", chaine_caracteres);
     return "fffffccccccccccccbbbbbbbbbbbbbddddddddddddddddeeeeeeeeeaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    //return chaine_caracteres;
+    // return chaine_caracteres;
 }
 
 /*char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine) {
@@ -316,37 +316,83 @@ char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee) 
 
     if (getMaillonSuivant(liste_triee) == NULL)
     {
-        chaine_encodee[strlen(chaine_encodee)-1] = '.'; //remplacer derniere virgule par: .
+        chaine_encodee[strlen(chaine_encodee)-1] = 9; //remplacer derniere virgule par: 9 (h_tab)
         return chaine_encodee;
     }
     else
     {
         // convertir int en char* et concatener les infos voulues dans en-tete
         char* chaine_temp = malloc(1000);
-        sprintf(chaine_temp, "%s%d%d%d%d%d", chaine_encodee, getCaractere(liste_triee), ':', getOccurrence(liste_triee, 0), ',', '\0'); 
-
+        sprintf(chaine_temp, "%s%d%d%c%c", chaine_encodee, getCaractere(liste_triee), getOccurrence(liste_triee, 0), 9, '\0'); 
+        //                               chaine si presente     caractere en int                occ en int       sep: h_tab
         return creerEnTeteHuffman(getMaillonSuivant(liste_triee), ab, chaine_temp);
     }
 }
 
 void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char* fileName) {
-    char* chaine_encodee = malloc(100*strlen(fichierChar)*sizeof(char*));
-    /*sprintf(chaine_encodee, "%d%d%d", getOccurrence(arbre, 0), ',', '\0');      // convertir somme_occurrence (d'arbre complet) en char* + ajouter ',' + '\0'(signal fin de chaine)
-    chaine_encodee = creerEnTeteHuffman(liste_triee, arbre, chaine_encodee);    // creer entete permettant decompression
-    printf("entete: %s\n", chaine_encodee);*/
+    char* chaine_entete = malloc(100*strlen(fichierChar)*sizeof(char*));       // on admet: position binaire dans arbre < 100 caracteres + entete ?
+    sprintf(chaine_entete, "%d%c%c", getOccurrence(arbre, 0), 9, '\0');        // convertir somme_occurrence (d'arbre complet) en char* + ajouter ',' + '\0'(signal fin de chaine)
+    chaine_entete = creerEnTeteHuffman(liste_triee, arbre, chaine_entete);     // creer entete permettant decompression
+    printf("entete: %s\n", chaine_entete);
+    int length_entete = strlen(chaine_entete);                                 // connaitre position fin entete
+
+    // ecrire en tete dans fichier.bin
+    FILE* fichier_compresse = fopen("essai_cmp.bin", "wb");
+    fwrite(chaine_entete, 1, length_entete, fichier_compresse);
+    fclose(fichier_compresse);
 
     // encoder la chaine
-    //parcoursPrefixe(arbre, malloc(10), -1, '\0', 'f');
+    // parcoursPrefixe(arbre, malloc(10), -1, '\0', 'f');
+    char* chaine_encodee = malloc(100*strlen(fichierChar)*sizeof(char*));
     for(int i=0; i<strlen(fichierChar); ++i)
     {
         parcoursPrefixe(arbre, malloc(100*sizeof(char*)), -1, '\0', fichierChar[i]);
         strcat(chaine_encodee, SUCCESS);
         // printf("%s\n", chaine_encodee);
     }
-    printf("%s\n", chaine_encodee); // malloc(): invalid size (unsorted)
+    printf("chaine_encodee: %s\n", chaine_encodee); // entete + chaine
 
-    FILE* fichier_compresse = fopen("essai_cmp.bin", "wb"); // ******************ECRIT SUR UN OCTET au lieu de BIT********************
-    fwrite(&chaine_encodee, 1, strlen(chaine_encodee), fichier_compresse);
+    // dans chaine_caracteres: 0 ou 1 codés sur 8 bits (char: 1 octet)
+    uint8_t* chaine_compressee = malloc((strlen(chaine_encodee)/8)*sizeof(uint8_t*));
+
+    // placer entete dans liste int
+    /*for(int i=0; i<length_entete; ++i)
+    {
+        if(chaine_encodee[i] != 9)
+        {
+            chaine_compressee[len_tab_int] = chaine_encodee[i]-'0'; // (char)x-'0' convertit garde la valeur char mais en int 
+        }
+        else
+        {
+            chaine_compressee[len_tab_int] = -1;
+        }
+        printf("%d", chaine_compressee[len_tab_int]);
+    }
+    puts(" ");*/
+
+    int len_tab_int = -1;
+    uint8_t base_dix = 0;
+    int i;
+    for(i=0; i<strlen(chaine_encodee); ++i)
+    {
+        len_tab_int++;
+        for(int j=0; j<=7; ++j)
+        {
+            if (chaine_encodee[i+j]!= 0)
+            {
+                base_dix += (chaine_encodee[i+j]-'0')*pow(2, 7-j); // 0 ou 1 * 2^j // potentiel probleme si nb_bits%8 != 0 ?
+                printf("%c : %d: %d\n", chaine_encodee[i+j], chaine_encodee[i+j]-'0', base_dix);
+            }
+        }
+        i += 7;
+        printf("base 10: %d\n", base_dix);
+        chaine_compressee[len_tab_int] += base_dix;
+        printf("base 10 dans tableau[%d]: %d\n", len_tab_int, chaine_compressee[len_tab_int]);
+        base_dix = 0;
+    }
+
+    fichier_compresse = fopen("essai_cmp.bin", "ab+");
+    fwrite(chaine_compressee, 1, len_tab_int, fichier_compresse);
     // fputs(chaine_encodee, fichier_compresse);
     fclose(fichier_compresse);
 }

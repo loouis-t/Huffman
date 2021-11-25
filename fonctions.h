@@ -45,4 +45,6 @@ char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee);
 //void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote);
 void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char* fileName);
 
+void decompresserDocHuffman(char* fileName);
+
 #endif

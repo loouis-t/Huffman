@@ -95,11 +95,11 @@ maillon* trierListeMaillons(maillon m) {
     }
 
     // ajouter maillons dans tableau pour faciliter tri
-    do {
+    while(m != NULL) {
         tab[n] = m;
         ++n;
         m = getMaillonSuivant(m);
-    } while(m != NULL);
+    }
 
     // trier tableau (bubble sort)
     for (int i=0; i<n; ++i)
@@ -120,7 +120,6 @@ maillon* trierListeMaillons(maillon m) {
 
 // nécessite fonction 'trierListeMaillons'
 // init n = 0
-// ************************************* PROBLEME: ++n impossible a passer en param ***************************************
 maillon convertirTabMaillon(maillon* tab, int n) {
     if (tab[n] == NULL) 
     {
@@ -187,8 +186,7 @@ char* convertirFileChar(char* fileName) {
         fread(chaine_caracteres, length, sizeof(char*), fichier_source);    // recuperer texte de FILE* dans char*
     }
     fclose(fichier_source);                                 // libérer FILE
-    printf("chaine: %s\n", chaine_caracteres);
-    // return "fffffccccccccccccbbbbbbbbbbbbbddddddddddddddddeeeeeeeeeaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    //printf("chaine: %s\n", chaine_caracteres);
     return chaine_caracteres;
 }
 
@@ -232,12 +230,13 @@ maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, in
         }
         else
         {
+
             if (checkIfMaillon(first_c, caracteres_distincts, 0) == 0)          // si le caractere n'a pas deja ete checké
             {
                 caracteres_distincts[strlen(caracteres_distincts)] = first_c;   // ajouter nouveau caractere a la liste des caracteres trouvables dans le texte
                 do {
                     current_c = chaine_caracteres[n++];     // récupérer caractere un par un dans texte
-                    if (current_c == first_c) {   // si le caractere observé est le meme que celui avec lequel on compare...
+                    if (current_c == first_c) {             // si le caractere observé est le meme que celui avec lequel on compare...
                         ++first_c_occ;                      // compter occurrences caractere
                     }
                 } while(current_c != '\0');                 // '\0': signal de fin de chaine
@@ -256,18 +255,25 @@ maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, in
 
 
 maillon construireArbreDeCodage(maillon m) {
-    if (getMaillonSuivant(m) == NULL)
+    if (m != NULL)
     {
-        return m;   // si un seul maillon restant: terminé-->arbre construit
+        if (getMaillonSuivant(m) == NULL)
+        {
+            return m;   // si un seul maillon restant: terminé-->arbre construit
+        }
+        else
+        {
+            maillon next_m = getMaillonSuivant(m);                                              // retenir le maillon suivant               (lisibilité)
+            int somme_frequences = getOccurrence(m, 0) + getOccurrence(next_m, 0);              // additionner occurrences                  (lisibilité)
+            m = creerMaillon(-1, -1, somme_frequences, m, next_m, getMaillonSuivant(next_m));   // creer arbre avec deux premiers maillons
+            maillon m_sorted = convertirTabMaillon(trierListeMaillons(m), 0);                   // trier cette chaine de maillons
+            //printf("occ fg: %d\n", getOccurrence(getFilsGauche(m_sorted), 0));
+            return construireArbreDeCodage(m_sorted);                                           // recursivité: rappel fonction
+        }
     }
     else
     {
-        maillon next_m = getMaillonSuivant(m);                                              // retenir le maillon suivant               (lisibilité)
-        int somme_frequences = getOccurrence(m, 0) + getOccurrence(next_m, 0);              // additionner occurrences                  (lisibilité)
-        m = creerMaillon(-1, -1, somme_frequences, m, next_m, getMaillonSuivant(next_m));   // creer arbre avec deux premiers maillons
-        maillon m_sorted = convertirTabMaillon(trierListeMaillons(m), 0);                   // trier cette chaine de maillons
-        //printf("occ fg: %d\n", getOccurrence(getFilsGauche(m_sorted), 0));
-        return construireArbreDeCodage(m_sorted);                                           // recursivité: rappel fonction
+        return NULL;
     }
 }
 
@@ -314,16 +320,19 @@ void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote, int c_reche
 
 char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee) {
 
-    if (getMaillonSuivant(liste_triee) == NULL)
+    if (liste_triee == NULL)
     {
-        chaine_encodee[strlen(chaine_encodee)-1] = 10; //remplacer derniere virgule par: 9 (h_tab)
+        long int longueur = strlen(chaine_encodee);
+        chaine_encodee[longueur-1] = 9;   // remplacer derniere virgule par: 9 (h_tab)
+        chaine_encodee[longueur] = 10;    // ajouter signal de fin d'entete: 10 (v_tab)
+        chaine_encodee[longueur+1] = '\0';
         return chaine_encodee;
     }
     else
     {
         // convertir int en char* et concatener les infos voulues dans en-tete
         char* chaine_temp = malloc(1000);
-        sprintf(chaine_temp, "%s%d%d%c%c", chaine_encodee, getCaractere(liste_triee), getOccurrence(liste_triee, 0), 9, '\0'); 
+        sprintf(chaine_temp, "%s%d%c%d%c%c", chaine_encodee, getCaractere(liste_triee), 9, getOccurrence(liste_triee, 0), 9, '\0'); 
         //                               chaine si presente     caractere en int                occ en int       sep: h_tab
         return creerEnTeteHuffman(getMaillonSuivant(liste_triee), ab, chaine_temp);
     }
@@ -361,7 +370,7 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
     chaine_compressee[0] = '\0';    // init (fin de) chaine
 
     int len_tab_int = -1;
-    uint8_t base_dix = 0;
+    u_int8_t base_dix = 0;
     int i;
     for(i=0; i<strlen(chaine_encodee); ++i)
     {
@@ -395,7 +404,8 @@ void decompresserDocHuffman(char* fileName) {
     char* nb_char_doc = malloc(100*sizeof(char*)); // nombre total de caracteres <= 8^100 (largement suffisant)
     nb_char_doc[0] = '\0';
 
-    int current_c;
+    // permet de connaitre le nombre total d'occurrences, pour le malloc de la chaine
+    int current_c = 0;
     int n=0;
     do 
     {
@@ -405,10 +415,87 @@ void decompresserDocHuffman(char* fileName) {
         n++;
     } while(current_c != 9);
 
-    int nombre_caracteres = atoi(nb_char_doc); // convertir char* en int | exemple: '100' devient 100
-    fclose(fichier_compresse);
+    int nombre_caracteres_malloc = atoi(nb_char_doc); // convertir char* en int | exemple: '100' devient 100
+    free(nb_char_doc);
+    printf("nombre c pour malloc: %d\n",nombre_caracteres_malloc);
+
 
     // recuperer entete
+    long int position_dans_entete = ftell(fichier_compresse);                 // connaitre taille fichier_compresse
+    int taille_entete = 1;
+    
+    // calculer taille entete
+    while(current_c != 10) {                                    // 10: signal de fin d'entete
+        current_c = fgetc(fichier_compresse);
+        if (current_c == 9)                                     // 9: séparateur dans l'entete
+        {
+            ++taille_entete;
+        }
+    }
+    printf("taille entete: %d\n", taille_entete);
+    fseek(fichier_compresse, position_dans_entete, SEEK_SET);   // revenir au debut du fichier
+
     // reconstruire arbre
+    int char_pos = 0;                                           // position en cours dans la chaine qui retiens le caractere en cours
+    char* caractere_en_cours = malloc(3*sizeof(char*));         // codage ascii max: 128 => 3 caracteres (compression ameliorée si un caractere sur un octet au lieu de 3) 
+    caractere_en_cours[0] = '\0';
+    maillon* m_entete = malloc(((taille_entete/2)+1)*sizeof(maillon));  // definir tableau de maillons destiné a creer arbre
+    u_int8_t maillon_pos = 0;
+    for(int i=0; i<((taille_entete/2)+1); ++i) {
+        m_entete[i] = NULL;
+    } // init tableau maillons a NULL
+
+    int pre_maillon[2] = { 0 };                                 // tableau pré-maillon: [caractere, occurrence]
+    u_int8_t modul_char = 0;
+    do {
+        if (current_c == 9)
+        {
+            int c = atoi(caractere_en_cours);
+            if (modul_char%2 == 0)
+            {
+                pre_maillon[0] = c;                         // retenir caractere en cours d'étude
+                printf("%c ", c);
+            }
+            else
+            {
+                pre_maillon[1] = c;                         // retenir occurrence en cours d'étude
+                m_entete[maillon_pos] = creerMaillon(pre_maillon[0], pre_maillon[1], -1, NULL, NULL, NULL);   // creer tableau de maillons
+                ++maillon_pos;
+                printf("%d\n", c);
+            }
+            
+            // re-init chaine
+            ++modul_char;                                   // modul_char%2=0 => caractere | sinon => occurrence
+            char_pos = 0;
+            caractere_en_cours[0] = '\0';
+        }
+        caractere_en_cours[char_pos] = current_c;           // ajouter le current_c dans la chaine
+        caractere_en_cours[char_pos+1] = '\0';              // préciser fin de chaine
+        char_pos++;
+        current_c = fgetc(fichier_compresse);
+    } while(current_c != 10);
+
+    for(int i=0; i<(taille_entete/2); ++i)
+    {
+        printf("car: %c\n", getCaractere(m_entete[i]));
+    }
+
+    puts("OK");
+    
+    maillon m = convertirTabMaillon(m_entete, 0);
+    puts("OK1");
+    maillon ab = construireArbreDeCodage(m);
+
+
+    printf("%d\n", getOccurrence(ab, 0));
+    printf("%d", getOccurrence(getFilsGauche(getFilsGauche(getFilsDroit(ab))), 0));
+    
+    
     // decoder texte
+    // convertir en binaire chaque fgetc ==> puis aller a gauche ou a droite dans arbre selon 0 ou 1
+
+
+    fclose(fichier_compresse);
+
+    
 }

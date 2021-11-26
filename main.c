@@ -2,19 +2,25 @@
 #include "fonctions.h"
 
 int main(int argc, char *argv[]){
-
-    char* fichierChar = convertirFileChar("h2g2.txt");
-    maillon m = countOccurrences(fichierChar, malloc(128), 0);                      // compter les occurrences de chaque caractere
+    char* fichierChar = convertirFileChar("debug.txt");
+    printf("fichierChar: %s\n", fichierChar);
+    maillon m = countOccurrences(fichierChar, malloc(128*sizeof(char*)), 0);        // compter les occurrences de chaque caractere
+    puts("Occurrences OK");
     maillon m_sorted = convertirTabMaillon(trierListeMaillons(m), 0);               // trier liste chainée de maillons
-    // afficherListeMaillons(m_sorted);                                                // afficher
-
-    maillon ab = construireArbreDeCodage(m_sorted);
+    puts("Tri OK");
+    // afficherListeMaillons(m_sorted);                                             // afficher
+    maillon ab = construireArbreDeCodage(m_sorted);                                 // construire arbre a partir tableau de maillons
+    puts("Arbre OK");
     // afficherListeMaillons(ab); // afficher somme occurrences (val premier noeud arbre: unique maillone de la chaine)
     //parcoursPrefixe(ab, malloc(10), -1, '\0');
 
-    creerDocHuffman(m_sorted, ab, fichierChar, "h2g2.txt");
+    printf("Compression...");
+    creerDocHuffman(m_sorted, ab, fichierChar, "debug.txt");
+    puts("OK");
 
-    decompresserDocHuffman("h2g2.tar");
+    puts("Décompression...");
+    decompresserDocHuffman("debug.tar");
+    puts("\nEND");
 }
 
 // COMPILATION:

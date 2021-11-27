@@ -308,7 +308,7 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
     char* nouveau_nom = malloc(strlen(fileName)*sizeof(char*));
     strcpy(nouveau_nom, fileName);
     nouveau_nom[strlen(nouveau_nom)-3] = '\0';
-    strcat(nouveau_nom, "tar");
+    strcat(nouveau_nom, "hfzip");
 
     // ecrire en tete dans fichier.bin
     FILE* fichier_compresse = fopen(nouveau_nom, "wb");
@@ -370,7 +370,7 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
     free(fichierChar);
 }
 
-void decompresserDocHuffman(char* fileName) {
+void decompresserDocHuffman(char* fileName, char* newFileName) {
 
     // connaitre taille chaine a decoder et encoder
     FILE* fichier_compresse = fopen(fileName, "rb");
@@ -459,8 +459,6 @@ void decompresserDocHuffman(char* fileName) {
     maillon ab = construireArbreDeCodage(m);
     puts("OK ARBRE");
 
-    free(m);    // libérer mémoire
-
     // verifier conformité arbre --- DEBUG ---
     printf("occ premier noeud: %d\n", getOccurrence(ab, 0));
     printf("occ noeud d->g->g: %d\n", getOccurrence(getFilsGauche(getFilsGauche(getFilsDroit(ab))), 0));
@@ -475,18 +473,14 @@ void decompresserDocHuffman(char* fileName) {
     long int last_char = ftell(fichier_compresse);              // connaitre taille fichier_compresse
     fseek(fichier_compresse, position_dans_entete, SEEK_SET);   // revenir a la position retenue
     long int taille_chaine_comp = last_char-position_dans_entete;
-
-
-    puts("Taille fichier: OK");
-
+    printf("taille_chaine_comp: %ld\n", taille_chaine_comp);
 
     unsigned char* chaine_compressee = malloc(taille_chaine_comp*sizeof(unsigned char*));     // malloc du nombre caracteres encodés
     chaine_compressee[0] = '\0';                                                              // init chaine
 
     fread(chaine_compressee, taille_chaine_comp, sizeof(unsigned char*), fichier_compresse);  // réécupérer le codage
-
-    puts("Get fichier: OK");
-
+    
+    taille_chaine_comp *= 8; // laisser place pour octets
     char* chaine_bin = malloc(taille_chaine_comp*sizeof(unsigned char*));       // chaque 'caractere' sur 8 bits
     chaine_bin[0] = '\0';                                                       // init chaine
 
@@ -502,39 +496,14 @@ void decompresserDocHuffman(char* fileName) {
 
     } // acchicher chaine_compressée -- DEBUG --
 
-    puts("Conversion binaire : OK"); 
-
+    puts("Conversion binaire : OK");
     // printf("\nchaine binaire: %s\n",chaine_bin);
     fclose(fichier_compresse);                                  // fermer le fichier (plus nécessaire à ce moment)
-    
-    // libérer deux trois trucs
-    free(chaine_compressee);
+    // free(chaine_compressee);
 
     // decoder la chaine binaire
-    printf("nb_c_malloc: %d\n", nombre_caracteres_malloc);
-    char* nouveau_document = malloc(nombre_caracteres_malloc*sizeof(char*));                // char* contenant le fichier decompressé
-    nouveau_document[0] = '\0';                                                             // init chaine
+    parcourirArbre(chaine_bin, newFileName, ab, ab);
 
-    char* temp_char = malloc(2*sizeof(char*));
-    temp_char[0] = '\0';
-
-    nouveau_document = parcourirArbre(chaine_bin, nouveau_document, ab, ab, 0, nombre_caracteres_malloc);
-    printf("chaine décompressée: %s\n", nouveau_document);
-
-    free(temp_char);
-    puts("OK");
-
-    // creer nouveau nom (nom fichier décompressé)
-    char* nouveau_nom = malloc(strlen(fileName)*sizeof(char*));
-    strcpy(nouveau_nom, fileName);
-    nouveau_nom[strlen(nouveau_nom)-4] = '\0';
-    strcat(nouveau_nom, "_decomp.txt");
-
-    printf("strlen: %ld\n", strlen(nouveau_document));
-
-    FILE* fichier_decompresse = fopen(nouveau_nom, "w");
-    fwrite(nouveau_document, strlen(nouveau_document), 1, fichier_decompresse);
-    fclose(fichier_decompresse);
 }
 
 char* convertirIntBinaire(int aConvertir) {
@@ -567,39 +536,42 @@ char* convertirIntBinaire(int aConvertir) {
     return chaineBinaire;
 }
 
-char* parcourirArbre(char* chaine_binaire, char* chaine_decomp, maillon ab, maillon ab_temoin, int pos_dans_chaine, int doc_size) {
+void parcourirArbre(char* chaine_binaire, char* nouveau_nom, maillon ab, maillon ab_temoin) {
     // printf("%s\n", chaine_decomp); 
-    if (chaine_binaire[pos_dans_chaine] == '\0')
-    {
-        return chaine_decomp;
-    }
-    else
+    if (chaine_binaire[0] != '\0')
     {
         if (getCaractere(ab) != -1)
         {
-            char* chaine_temp = malloc((strlen(chaine_decomp)+1)*sizeof(char*));                     // sprintf necessite une destination vide
-            printf("%ld\n", strlen(chaine_decomp));
-            chaine_temp[0] = '\0';                                                  // init chaine pour sprintf
+            // char* chaine_temp = malloc((strlen(chaine_decomp)+1)*sizeof(char*));                     // sprintf necessite une destination vide
+            // printf("%ld\n", strlen(chaine_decomp));
+            // chaine_temp[0] = '\0';                                                  // init chaine pour sprintf
             // printf("caractere: %c\n", getCaractere(ab));
 
             // **************** REMPLACER sprintf PAR SOLUTION POUR EVITER PROBLEMES DE MALLOC (chaine_decomp[i] ?) ***********************
 
-
-            sprintf(chaine_temp, "%s%c%c", chaine_decomp, getCaractere(ab), '\0');  // concatener nouveau caractere avec caracteres precedents (+ signal de fin de chaine)
-            // printf("chaine: %s\n", chaine_temp);
-            return parcourirArbre(chaine_binaire, chaine_temp, ab_temoin, ab_temoin, pos_dans_chaine, doc_size);
+            // chaine_decomp[pos_dans_decomp] = ;
+            // chaine_decomp[pos_dans_decomp+1] = '\0';
+            FILE* fichier_decompresse = fopen(nouveau_nom, "a+");
+            fputc(getCaractere(ab), fichier_decompresse);
+            fclose(fichier_decompresse);
+            
+            // sprintf(chaine_temp, "%s%c%c", chaine_decomp, getCaractere(ab), '\0');  // concatener nouveau caractere avec caracteres precedents (+ signal de fin de chaine)
+            // printf("chaine: %s\n", chaine_decomp);
+            parcourirArbre(chaine_binaire, nouveau_nom, ab_temoin, ab_temoin);
         }
         else
         {
-            if (chaine_binaire[pos_dans_chaine] == '1')
+            if (chaine_binaire[0] == '1')
             {
                 // printf("bin: %c\n", chaine_binaire[pos_dans_chaine]);
-                return parcourirArbre(chaine_binaire, chaine_decomp, getFilsDroit(ab), ab_temoin, ++pos_dans_chaine, doc_size);
+                memmove(chaine_binaire, chaine_binaire+1, strlen(chaine_binaire));
+                parcourirArbre(chaine_binaire, nouveau_nom, getFilsDroit(ab), ab_temoin);
             }
             else
             {
                 // printf("bin: %c\n", chaine_binaire[pos_dans_chaine]);
-                return parcourirArbre(chaine_binaire, chaine_decomp, getFilsGauche(ab), ab_temoin, ++pos_dans_chaine, doc_size);
+                memmove(chaine_binaire, chaine_binaire+1, strlen(chaine_binaire));
+                parcourirArbre(chaine_binaire, nouveau_nom, getFilsGauche(ab), ab_temoin);
             }
         }
     }

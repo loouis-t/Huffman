@@ -45,8 +45,8 @@ char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee);
 //void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote);
 void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char* fileName);
 
-void decompresserDocHuffman(char* fileName);
+void decompresserDocHuffman(char* fileName, char* newFileName);
 char* convertirIntBinaire(int aConvertir);
-char* parcourirArbre(char* chaine_binaire, char* chaine_decomp, maillon ab, maillon ab_temoin, int pos_dans_chaine, int doc_size);
+void parcourirArbre(char* chaine_binaire, char* nouveau_nom, maillon ab, maillon ab_temoin);
 
 #endif

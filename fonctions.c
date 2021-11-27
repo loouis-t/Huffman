@@ -358,12 +358,15 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
 
     // encoder le fichier (fichierChar)
     char* chaine_encodee = malloc(100*strlen(fichierChar)*sizeof(char*));
+
+    // --- ENCODE AUSSI ENTETE --- ************************* PROBLEME ********************************
+
     for(int i=0; i<strlen(fichierChar); ++i)
     {
         parcoursPrefixe(arbre, malloc(100*sizeof(char*)), -1, '\0', fichierChar[i]);
         strcat(chaine_encodee, SUCCESS);
     }
-    // printf("chaine_encodee: %s\n", chaine_encodee); // entete + chaine
+    printf("chaine_encodee: %s\n", chaine_encodee); // entete + chaine
 
     // dans chaine_caracteres: 0 ou 1 codés sur 8 bits (char: 1 octet)
     unsigned char* chaine_compressee = malloc((strlen(chaine_encodee)/8)*sizeof(unsigned char*)); // unsigned: eviter probleme bit de signe
@@ -371,19 +374,21 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
 
     int len_tab_int = -1;
     u_int8_t base_dix = 0;
-    int i;
-    for(i=0; i<strlen(chaine_encodee); ++i)
+    for(int i=0; i<strlen(chaine_encodee); i+=7)
     {
         len_tab_int++;
-        for(int j=0; j<=7; ++j)
+        for(int j=0; j<8; ++j)
         {
+            // printf("%c", chaine_encodee[i+j]);
             if (chaine_encodee[i+j]!= 0)
             {
+                printf("%c : %d | ", chaine_encodee[i+j], chaine_encodee[i+j]-'0');
                 base_dix += (chaine_encodee[i+j]-'0')*pow(2, 7-j);      // 0 ou 1 * 2^j 
                 // printf("%c : %d: %d\n", chaine_encodee[i+j], chaine_encodee[i+j]-'0', base_dix);
             }
+
         }
-        i += 7;
+        puts(" ");
         // printf("base 10: %d\n", base_dix);
         chaine_compressee[len_tab_int] = base_dix;
         chaine_compressee[len_tab_int+1] = '\0';    // indiquer fin de chaine
@@ -392,8 +397,13 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
     }
     free(chaine_encodee);   // libérer memoire
 
+    for(int i=0; i<len_tab_int+1; ++i)
+    {
+        printf("%d ", chaine_compressee[i]);
+    } // afficher la chaine -- DEBUG --
+
     fichier_compresse = fopen(nouveau_nom, "ab+");
-    fwrite(chaine_compressee, 1, len_tab_int, fichier_compresse);
+    fwrite(chaine_compressee, sizeof(unsigned char), len_tab_int, fichier_compresse);
     fclose(fichier_compresse);
 }
 
@@ -421,7 +431,7 @@ void decompresserDocHuffman(char* fileName) {
 
 
     // recuperer entete
-    long int position_dans_entete = ftell(fichier_compresse);                 // connaitre taille fichier_compresse
+    long int position_dans_entete = ftell(fichier_compresse);   // connaitre taille entete fichier_compresse
     int taille_entete = 1;
     
     // calculer taille entete
@@ -494,8 +504,65 @@ void decompresserDocHuffman(char* fileName) {
     // decoder texte
     // convertir en binaire chaque fgetc ==> puis aller a gauche ou a droite dans arbre selon 0 ou 1
 
+    printf("\nposition dans la chaine: %ld\n", ftell(fichier_compresse));
+
+    position_dans_entete = ftell(fichier_compresse);
+    fseek(fichier_compresse, 0, SEEK_END);                      // position dernier caractere de FILE
+    long int last_char = ftell(fichier_compresse);              // connaitre taille fichier_compresse
+    fseek(fichier_compresse, position_dans_entete, SEEK_SET);   // revenir a la position retenue
+
+    unsigned char* chaine_compressee = malloc((last_char-position_dans_entete)*sizeof(unsigned char));     // malloc du nombre caracteres encodés
+    chaine_compressee[0] = '\0';
+
+    fread(chaine_compressee, (last_char-position_dans_entete), sizeof(unsigned char), fichier_compresse);   // réécupérer le codage
+
+    char* chaine_bin = malloc(8*sizeof(chaine_compressee));     // chaque 'caractere' sur 8 bits
+    chaine_bin[0] = '\0';                                       // init chaine
+    
+    for(int i=0; i<(last_char-position_dans_entete+1); ++i)     // convertir chaine en binaire
+    {
+        // printf("%d ", chaine_compressee[i]);
+        // char* chaine_tmp = malloc(sizeof(chaine_bin));
+        // chaine_tmp[0] = '\0';
+
+        strcat(chaine_bin, convertirIntBinaire(chaine_compressee[i]));
+
+    } // acchicher chaine_compressée -- DEBUG --
+
+    printf("chaine binaire: %s\n",chaine_bin);
+
 
     fclose(fichier_compresse);
 
     
+}
+
+
+char* convertirIntBinaire(int aConvertir) {
+    char* chaineBinaire = malloc(8*sizeof(char*));      // un octet
+    chaineBinaire[0] = '\0';                            // init chaine
+
+    // printf("A convertir: %d\n", aConvertir);
+
+    for(int i=0; aConvertir>0; ++i)
+    {
+        char* chaine_tmp = malloc(sizeof(chaineBinaire));
+        strcpy(chaine_tmp, chaineBinaire);                          // copier dans chaine_tmp pour retenir valeur
+        chaineBinaire[0] = '\0';                                    // sprintf concatene toujours dans char* vide
+        sprintf(chaineBinaire, "%d%s", (aConvertir%2), chaine_tmp); // ajouter '1' (char) quand 1 (int)
+        // chaineBinaire[i] = aConvertir%2;
+        aConvertir /= 2;
+    }
+
+    while (strlen(chaineBinaire) < 8)
+    {
+        char* chaine_tmp = malloc(sizeof(chaineBinaire));
+        strcpy(chaine_tmp, chaineBinaire);                          // copier dans chaine_tmp pour retenir valeur
+        chaineBinaire[0] = '\0';                                    // sprintf concatene toujours dans char* vide
+        sprintf(chaineBinaire, "%d%s", 0, chaine_tmp);              // rajouter les 0 manquants pour atteindre l'octet
+    }
+
+    // printf("chaine binaire: %s\n", chaineBinaire);
+
+    return chaineBinaire;
 }

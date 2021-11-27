@@ -14,13 +14,17 @@ int main(int argc, char *argv[]){
     // afficherListeMaillons(ab); // afficher somme occurrences (val premier noeud arbre: unique maillone de la chaine)
     //parcoursPrefixe(ab, malloc(10), -1, '\0');
 
-    printf("Compression...");
+    printf("Compression...\n");
     creerDocHuffman(m_sorted, ab, fichierChar, "debug.txt");
     puts("OK");
 
     puts("Décompression...");
     decompresserDocHuffman("debug.tar");
     puts("\nEND");
+
+    printf("'5'-'0': %d\n", '5'-'0');
+    printf("'0' - '0': %d\n", '0'-'0');
+
 }
 
 // COMPILATION:

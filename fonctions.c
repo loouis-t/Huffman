@@ -123,6 +123,7 @@ maillon* trierListeMaillons(maillon m) {
 maillon convertirTabMaillon(maillon* tab, int n) {
     if (tab[n] == NULL) 
     {
+        free(tab);
         return NULL;
     }
     else
@@ -190,36 +191,12 @@ char* convertirFileChar(char* fileName) {
     return chaine_caracteres;
 }
 
-/*char* getDistinctsCaracters(char* chaine_caracteres, char* caracteres_distincts, int position_chaine) {
-    int flag = 0; // le caractere n'a jamais ete vu
-    if (position_chaine > strlen(chaine_caracteres))
-    {
-        return caracteres_distincts;
-    }
-    else
-    {
-        for (int i = 0; i < strlen(caracteres_distincts); ++i)
-        {
-            if (chaine_caracteres[position_chaine] == caracteres_distincts[i])
-            {
-                flag = 1;   // le caractere a deja ete vu
-                break;
-            }
-        }
-        if(flag == 0)       // si jamais vu ...
-        {
-            caracteres_distincts[strlen(caracteres_distincts)] = chaine_caracteres[position_chaine];   // ajouter caractere chaine dans liste des caracteres distincts
-        }
-        return getDistinctsCaracters(chaine_caracteres, caracteres_distincts, ++position_chaine);
-    }
-}*/
-
 // recuperer liste de maillons [caractere, occurrence]
-maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, int position) {
-    int n = position;       // commencer les tests a la position du caractere temoin
+maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, int position, int pos_char_dist) {
+    int n = position;                           // commencer les tests a la position du caractere temoin
     char current_c;
     char first_c;
-    int first_c_occ = 0;    // init à 1 pour ++ par la suite
+    int first_c_occ = 0;                        // init à 1 pour ++ par la suite
 
     if (chaine_caracteres != NULL) {
 
@@ -233,17 +210,18 @@ maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, in
 
             if (checkIfMaillon(first_c, caracteres_distincts, 0) == 0)          // si le caractere n'a pas deja ete checké
             {
-                caracteres_distincts[strlen(caracteres_distincts)] = first_c;   // ajouter nouveau caractere a la liste des caracteres trouvables dans le texte
+                caracteres_distincts[pos_char_dist] = first_c;      // ajouter nouveau caractere a la liste des caracteres trouvables dans le texte
+                caracteres_distincts[pos_char_dist+1] = '\0';       // replacer signal de fin
                 do {
                     current_c = chaine_caracteres[n++];     // récupérer caractere un par un dans texte
                     if (current_c == first_c) {             // si le caractere observé est le meme que celui avec lequel on compare...
                         ++first_c_occ;                      // compter occurrences caractere
                     }
                 } while(current_c != '\0');                 // '\0': signal de fin de chaine
-                return creerMaillon(first_c, first_c_occ, -1, NULL, NULL, countOccurrences(chaine_caracteres, caracteres_distincts, ++position)); // creer maillon en rappelant la fonction (recursivité)
+                return creerMaillon(first_c, first_c_occ, -1, NULL, NULL, countOccurrences(chaine_caracteres, caracteres_distincts, ++position, ++pos_char_dist)); // creer maillon en rappelant la fonction (recursivité)
             }
             else {
-                return countOccurrences(chaine_caracteres, caracteres_distincts, ++position);
+                return countOccurrences(chaine_caracteres, caracteres_distincts, ++position, pos_char_dist);
             }
         }
     }
@@ -277,26 +255,7 @@ maillon construireArbreDeCodage(maillon m) {
     }
 }
 
-/*void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote) {
-    if (m != NULL)
-    {
-        binaryCode[pos++] = cote;
-        if (getCaractere(m) != -1)      // si le premier noeud possede un caractere
-        {
-            binaryCode[pos] = '\0';     // terminer chaine de maillons
-            printf("%c : %d : %s\n", getCaractere(m), getOccurrence(m, 2), binaryCode);
-            --pos;
-        }
-        parcoursPrefixe(getFilsGauche(m), binaryCode, pos, 48);
-        parcoursPrefixe(getFilsDroit(m), binaryCode, pos, 49);
-    } 
-    else 
-    {
-        binaryCode[pos] = '\0';
-    }
-}*/
-
-char SUCCESS[10*sizeof(char*)];
+char SUCCESS[8*sizeof(char*)];
 void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote, int c_recherche) {
     //printf("%d : %s\n", pos, binaryCode);
     if (m != NULL)
@@ -318,21 +277,21 @@ void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote, int c_reche
     }
 }
 
-char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee) {
+char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_entete) {
 
     if (liste_triee == NULL)
     {
-        long int longueur = strlen(chaine_encodee);
-        chaine_encodee[longueur-1] = 9;   // remplacer derniere virgule par: 9 (h_tab)
-        chaine_encodee[longueur] = 10;    // ajouter signal de fin d'entete: 10 (v_tab)
-        chaine_encodee[longueur+1] = '\0';
-        return chaine_encodee;
+        long int longueur = strlen(chaine_entete);
+        chaine_entete[longueur-1] = 9;   // remplacer derniere virgule par: 9 (h_tab)
+        chaine_entete[longueur] = 10;    // ajouter signal de fin d'entete: 10 (v_tab)
+        chaine_entete[longueur+1] = '\0';
+        return chaine_entete;
     }
     else
     {
         // convertir int en char* et concatener les infos voulues dans en-tete
         char* chaine_temp = malloc(1000);
-        sprintf(chaine_temp, "%s%d%c%d%c%c", chaine_encodee, getCaractere(liste_triee), 9, getOccurrence(liste_triee, 0), 9, '\0'); 
+        sprintf(chaine_temp, "%s%d%c%d%c%c", chaine_entete, getCaractere(liste_triee), 9, getOccurrence(liste_triee, 0), 9, '\0'); 
         //                               chaine si presente     caractere en int                occ en int       sep: h_tab
         return creerEnTeteHuffman(getMaillonSuivant(liste_triee), ab, chaine_temp);
     }
@@ -358,23 +317,24 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
 
     // encoder le fichier (fichierChar)
     char* chaine_encodee = malloc(100*strlen(fichierChar)*sizeof(char*));
-
-    // --- ENCODE AUSSI ENTETE --- ************************* PROBLEME ********************************
+    chaine_encodee[0] = '\0';
 
     for(int i=0; i<strlen(fichierChar); ++i)
     {
-        parcoursPrefixe(arbre, malloc(100*sizeof(char*)), -1, '\0', fichierChar[i]);
+        char* binCode = malloc(8*sizeof(char*));
+        binCode[0] = '\0';
+        parcoursPrefixe(arbre, binCode, -1, '\0', fichierChar[i]);  
         strcat(chaine_encodee, SUCCESS);
     }
-    printf("chaine_encodee: %s\n", chaine_encodee); // entete + chaine
+    // printf("chaine_encodee: %s\n", chaine_encodee); // entete + chaine
 
     // dans chaine_caracteres: 0 ou 1 codés sur 8 bits (char: 1 octet)
-    unsigned char* chaine_compressee = malloc((strlen(chaine_encodee)/8)*sizeof(unsigned char*)); // unsigned: eviter probleme bit de signe
+    unsigned char* chaine_compressee = malloc((strlen(chaine_encodee))*sizeof(unsigned char*)); // unsigned: eviter probleme bit de signe
     chaine_compressee[0] = '\0';    // init (fin de) chaine
 
     int len_tab_int = -1;
     u_int8_t base_dix = 0;
-    for(int i=0; i<strlen(chaine_encodee); i+=7)
+    for(int i=0; i<strlen(chaine_encodee); i+=8)
     {
         len_tab_int++;
         for(int j=0; j<8; ++j)
@@ -382,29 +342,32 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
             // printf("%c", chaine_encodee[i+j]);
             if (chaine_encodee[i+j]!= 0)
             {
-                printf("%c : %d | ", chaine_encodee[i+j], chaine_encodee[i+j]-'0');
+                // printf("%c : %d | ", chaine_encodee[i+j], chaine_encodee[i+j]-'0');
                 base_dix += (chaine_encodee[i+j]-'0')*pow(2, 7-j);      // 0 ou 1 * 2^j 
                 // printf("%c : %d: %d\n", chaine_encodee[i+j], chaine_encodee[i+j]-'0', base_dix);
             }
 
         }
-        puts(" ");
         // printf("base 10: %d\n", base_dix);
         chaine_compressee[len_tab_int] = base_dix;
         chaine_compressee[len_tab_int+1] = '\0';    // indiquer fin de chaine
         // printf("base 10 dans tableau[%d]: %d\n", len_tab_int, chaine_compressee[len_tab_int]);
         base_dix = 0;
     }
-    free(chaine_encodee);   // libérer memoire
 
-    for(int i=0; i<len_tab_int+1; ++i)
-    {
-        printf("%d ", chaine_compressee[i]);
-    } // afficher la chaine -- DEBUG --
+    // for(int i=0; i<len_tab_int+1; ++i)
+    // {
+    //     printf("%d ", chaine_compressee[i]);
+    // } // afficher la chaine -- DEBUG --
 
     fichier_compresse = fopen(nouveau_nom, "ab+");
-    fwrite(chaine_compressee, sizeof(unsigned char), len_tab_int, fichier_compresse);
+    fwrite(chaine_compressee, sizeof(unsigned char), len_tab_int+1, fichier_compresse);
     fclose(fichier_compresse);
+
+    // libérer memoire
+    free(chaine_encodee);   
+    free(chaine_compressee);
+    free(fichierChar);
 }
 
 void decompresserDocHuffman(char* fileName) {
@@ -426,9 +389,9 @@ void decompresserDocHuffman(char* fileName) {
     } while(current_c != 9);
 
     int nombre_caracteres_malloc = atoi(nb_char_doc); // convertir char* en int | exemple: '100' devient 100
-    free(nb_char_doc);
     printf("nombre c pour malloc: %d\n",nombre_caracteres_malloc);
 
+    free(nb_char_doc); // libérer memoire
 
     // recuperer entete
     long int position_dans_entete = ftell(fichier_compresse);   // connaitre taille entete fichier_compresse
@@ -464,7 +427,7 @@ void decompresserDocHuffman(char* fileName) {
             if (modul_char%2 == 0)
             {
                 pre_maillon[0] = c;                         // retenir caractere en cours d'étude
-                printf("%c ", c);
+                printf("%c : ", c);
             }
             else
             {
@@ -485,66 +448,80 @@ void decompresserDocHuffman(char* fileName) {
         current_c = fgetc(fichier_compresse);
     } while(current_c != 10);
 
-    for(int i=0; i<(taille_entete/2); ++i)
-    {
-        printf("car: %c\n", getCaractere(m_entete[i]));
-    }
+    free(caractere_en_cours);   // libérer mémoire
 
-    puts("OK");
+    // for(int i=0; i<(taille_entete/2); ++i)
+    // {
+    //     printf("car: %c\n", getCaractere(m_entete[i]));
+    // } // afficher caracteres entete --- DEBUG ---
     
     maillon m = convertirTabMaillon(m_entete, 0);
-    puts("OK1");
     maillon ab = construireArbreDeCodage(m);
 
+    free(m);    // libérer mémoire
 
-    printf("%d\n", getOccurrence(ab, 0));
-    printf("%d", getOccurrence(getFilsGauche(getFilsGauche(getFilsDroit(ab))), 0));
+    // verifier conformité arbre --- DEBUG ---
+    printf("occ premier noeud: %d\n", getOccurrence(ab, 0));
+    printf("occ noeud d->g->g: %d", getOccurrence(getFilsGauche(getFilsGauche(getFilsDroit(ab))), 0));
     
     
     // decoder texte
     // convertir en binaire chaque fgetc ==> puis aller a gauche ou a droite dans arbre selon 0 ou 1
-
-    printf("\nposition dans la chaine: %ld\n", ftell(fichier_compresse));
 
     position_dans_entete = ftell(fichier_compresse);
     fseek(fichier_compresse, 0, SEEK_END);                      // position dernier caractere de FILE
     long int last_char = ftell(fichier_compresse);              // connaitre taille fichier_compresse
     fseek(fichier_compresse, position_dans_entete, SEEK_SET);   // revenir a la position retenue
 
-    unsigned char* chaine_compressee = malloc((last_char-position_dans_entete)*sizeof(unsigned char));     // malloc du nombre caracteres encodés
-    chaine_compressee[0] = '\0';
+    puts("\nOK 0");
 
-    fread(chaine_compressee, (last_char-position_dans_entete), sizeof(unsigned char), fichier_compresse);   // réécupérer le codage
+    unsigned char* chaine_compressee = malloc((last_char-position_dans_entete)*sizeof(unsigned char*));     // malloc du nombre caracteres encodés
+    chaine_compressee[0] = '\0';                                                                            // init chaine
+    puts("OK 1");
+
+    fread(chaine_compressee, (last_char-position_dans_entete), sizeof(unsigned char*), fichier_compresse);   // réécupérer le codage
+    puts("OK 2");
 
     char* chaine_bin = malloc(8*sizeof(chaine_compressee));     // chaque 'caractere' sur 8 bits
     chaine_bin[0] = '\0';                                       // init chaine
-    
-    for(int i=0; i<(last_char-position_dans_entete+1); ++i)     // convertir chaine en binaire
+    puts("OK 3");
+
+    // printf("%s\n", chaine_compressee);
+
+    for(int i=0; i<(last_char-position_dans_entete); ++i)       // convertir chaine en binaire
     {
         // printf("%d ", chaine_compressee[i]);
         // char* chaine_tmp = malloc(sizeof(chaine_bin));
         // chaine_tmp[0] = '\0';
-
+        // printf("OK 2[%d]\n", i);
         strcat(chaine_bin, convertirIntBinaire(chaine_compressee[i]));
 
     } // acchicher chaine_compressée -- DEBUG --
 
-    printf("chaine binaire: %s\n",chaine_bin);
+    puts("OK 4");
 
-
-    fclose(fichier_compresse);
-
+    // printf("\nchaine binaire: %s\n",chaine_bin);
+    fclose(fichier_compresse);                                  // fermer le fichier (plus nécessaire à ce moment)
     
+    // libérer deux trois trucs
+    free(chaine_compressee);
+
+    // decoder la chaine binaire
+    char* nouveau_document = malloc(nombre_caracteres_malloc*sizeof(unsigned char*));       // char* contenant le fichier decompressé
+    nouveau_document[0] = '\0';                                                             // init chaine
+
+    nouveau_document = parcourirArbre(chaine_bin, nouveau_document, ab, ab, 0, nombre_caracteres_malloc);
+    printf("chaine décompressée: %s\n", nouveau_document);
 }
 
-
 char* convertirIntBinaire(int aConvertir) {
+    // printf("aConvertir : %d\n", aConvertir);
     char* chaineBinaire = malloc(8*sizeof(char*));      // un octet
     chaineBinaire[0] = '\0';                            // init chaine
 
     // printf("A convertir: %d\n", aConvertir);
 
-    for(int i=0; aConvertir>0; ++i)
+    while(aConvertir>0)
     {
         char* chaine_tmp = malloc(sizeof(chaineBinaire));
         strcpy(chaine_tmp, chaineBinaire);                          // copier dans chaine_tmp pour retenir valeur
@@ -554,15 +531,47 @@ char* convertirIntBinaire(int aConvertir) {
         aConvertir /= 2;
     }
 
-    while (strlen(chaineBinaire) < 8)
+    while (strlen(chaineBinaire) <= 7)
     {
         char* chaine_tmp = malloc(sizeof(chaineBinaire));
         strcpy(chaine_tmp, chaineBinaire);                          // copier dans chaine_tmp pour retenir valeur
         chaineBinaire[0] = '\0';                                    // sprintf concatene toujours dans char* vide
         sprintf(chaineBinaire, "%d%s", 0, chaine_tmp);              // rajouter les 0 manquants pour atteindre l'octet
+        free(chaine_tmp);
     }
 
     // printf("chaine binaire: %s\n", chaineBinaire);
-
     return chaineBinaire;
+}
+
+char* parcourirArbre(char* chaine_binaire, char* chaine_decomp, maillon ab, maillon ab_temoin, int pos_dans_chaine, int doc_size) {
+    if (chaine_binaire[pos_dans_chaine] == '\0')
+    {
+        return chaine_decomp;
+    }
+    else
+    {
+        if (getCaractere(ab) != -1)
+        {
+            char* chaine_temp = malloc(100*sizeof(char*));                          // sprintf necessite une destination vide
+            chaine_temp[0] = '\0';                                                  // init chaine pour sprintf
+            // printf("caractere: %c\n", getCaractere(ab));
+            sprintf(chaine_temp, "%s%c%c", chaine_decomp, getCaractere(ab), '\0');  // concatener nouveau caractere avec caracteres precedents (+ signal de fin de chaine)
+            // printf("chaine: %s\n", chaine_temp);
+            return parcourirArbre(chaine_binaire, chaine_temp, ab_temoin, ab_temoin, pos_dans_chaine, doc_size);
+        }
+        else
+        {
+            if (chaine_binaire[pos_dans_chaine] == '1')
+            {
+                // printf("bin: %c\n", chaine_binaire[pos_dans_chaine]);
+                return parcourirArbre(chaine_binaire, chaine_decomp, getFilsDroit(ab), ab_temoin, ++pos_dans_chaine, doc_size);
+            }
+            else
+            {
+                // printf("bin: %c\n", chaine_binaire[pos_dans_chaine]);
+                return parcourirArbre(chaine_binaire, chaine_decomp, getFilsGauche(ab), ab_temoin, ++pos_dans_chaine, doc_size);
+            }
+        }
+    }
 }

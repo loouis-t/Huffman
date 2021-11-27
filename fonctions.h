@@ -38,7 +38,7 @@ maillon* trierListeMaillons(maillon m);
 maillon convertirTabMaillon(maillon* tab, int n);
 int checkIfMaillon(int c, char* caracteres_distincts, int position);
 char* convertirFileChar(char* fileName);
-maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, int position);
+maillon countOccurrences(char* chaine_caracteres, char* caracteres_distincts, int position, int pos_char_dist);
 maillon construireArbreDeCodage(maillon m);
 void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote, int c_recherche);
 char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee);
@@ -47,5 +47,6 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
 
 void decompresserDocHuffman(char* fileName);
 char* convertirIntBinaire(int aConvertir);
+char* parcourirArbre(char* chaine_binaire, char* chaine_decomp, maillon ab, maillon ab_temoin, int pos_dans_chaine, int doc_size);
 
 #endif

@@ -12,7 +12,7 @@ L'option ```-lm``` est permet de lier la librairie ```<maths.h>``` (qui ne fait 
 
 **Compression :**
 ```
-./huffman -c <fichier_a_compresser>
+./huffman -c <fichier_a_compresser> <nom_fichier_sortie>
 ```
 
 **Decompression :**
@@ -59,8 +59,21 @@ La nouvelle chaîne créée à partir de ces entiers en base 10 peut alors être
   
 Ex:  
 ![solution_compression](./assets/solution_compression.png)  
+  
 
 - **Décompression :**
 
-La première étape est de récupérer l'entête du fichier compressé, et de recréer l'arbre: les séparateurs 9 ("HORIZONTAL TAB") et 10 ("VERTICAL TAB") simplifient la tâche en permettant la distinction entre les caractères et leur occurrence, et le signalement de la fin de l'en-tête.  
-Une fois l'arbre reconstruit, on peut récupérer chaque caractère de la chaîne, le convertir en binaire, et parcourir l'arbre selon le "bit" : 0 ==> fils gauche, 1 ==> fils droit.  
+La première étape est de récupérer l'entête du fichier compressé, et de recréer l'arbre de la même façon qu'à la compression: les séparateurs 9 ("HORIZONTAL TAB") et 10 ("VERTICAL TAB") simplifient la tâche en permettant la distinction entre les caractères et leur occurrence, et le signalement de la fin de l'en-tête.  
+Une fois l'arbre reconstruit, on peut récupérer chaque caractère de la chaîne, le convertir en binaire, et parcourir l'arbre selon le "bit" : 0 --> fils gauche, 1 --> fils droit.  
+Lorsque la recherche atteint une feuille de l'arbre, elle ajoute le caractère de cette feuille dans un nouveau fichier (le fichier décompressé) et repart à la racine de l'arbre.  
+Lorsqu'il n'y a plus de caractère binaire dans la chaine source, la recherche s'arrête et le fichier se ferme.  
+  
+
+- **Problème noté :**
+
+Lors de la *compression*, si la chaine binaire (avant découpage en groupes de 8 caractères) n'est pas un multiple de 8, le programme va compléter le dernier groupe avec les '0' manquants pour arriver à l'octet. Ainsi, lors de la *décompression*, il est probable qu'un caractère non désiré soit ajouté en fin de chaine.  
+Par exemple, si *'lorem.txt'* est compressé en *'lorem.hzip'*, lors de la décompression de *'lorem.hzip'*, le fichier décompressé (ex: *'lorem_decomp.txt'*) comportera un '**r**' tout à la fin de la chaîne, issu d'un "0000" (quatre zéros) ajouté en bout de cahîne binaire au moment de la décompression.  
+  
+---
+Louis Travaux | Edouard Calzado  
+PRE-ING-2

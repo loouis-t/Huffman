@@ -44,7 +44,7 @@ maillon construireArbreDeCodage(maillon m);
 void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote, int c_recherche);
 char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_encodee);
 //void parcoursPrefixe(maillon m, char* binaryCode, int pos, int cote);
-void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char* fileName);
+void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char* fileName, char* newFileName);
 
 void decompresserDocHuffman(char* fileName, char* newFileName);
 char* convertirIntBinaire(int aConvertir);

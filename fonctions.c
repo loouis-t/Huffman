@@ -269,21 +269,15 @@ char* creerEnTeteHuffman(maillon liste_triee, maillon ab, char* chaine_entete) {
     }
 }
 
-void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char* fileName) {
+void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char* fileName, char* newFileName) {
     char* chaine_entete = malloc(100*strlen(fichierChar)*sizeof(char*));       // on admet: position binaire dans arbre < 100 caracteres + entete
     sprintf(chaine_entete, "%d%c%c", getOccurrence(arbre, 0), 9, '\0');        // convertir somme_occurrence (d'arbre complet) en char* + ajouter ',' + '\0'(signal fin de chaine)
     chaine_entete = creerEnTeteHuffman(liste_triee, arbre, chaine_entete);     // creer entete permettant decompression
     // printf("entete: %s\n", chaine_entete);
     int length_entete = strlen(chaine_entete);                                 // connaitre position fin entete
 
-    // creer nouveau nom (nom fichier compressé)
-    char* nouveau_nom = malloc(strlen(fileName)*sizeof(char*));
-    strcpy(nouveau_nom, fileName);
-    nouveau_nom[strlen(nouveau_nom)-3] = '\0';
-    strcat(nouveau_nom, "hfzip");
-
     // ecrire en tete dans fichier.bin
-    FILE* fichier_compresse = fopen(nouveau_nom, "wb");
+    FILE* fichier_compresse = fopen(newFileName, "wb");
     fwrite(chaine_entete, 1, length_entete, fichier_compresse);
     fclose(fichier_compresse);
 
@@ -321,7 +315,7 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
         base_dix = 0;
     }
 
-    fichier_compresse = fopen(nouveau_nom, "ab+");
+    fichier_compresse = fopen(newFileName, "ab+");
     fwrite(chaine_compressee, sizeof(unsigned char), len_tab_int+1, fichier_compresse);
     fclose(fichier_compresse);
 

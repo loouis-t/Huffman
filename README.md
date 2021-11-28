@@ -9,7 +9,7 @@ gcc -Wall main.c fonctions.c fonctions.h -o huffman -lm     (linux)
 gcc -Wall main.c fonctions.c fonctions.h -o huffman         (macos)
 ```
 
-L'option ```-lm``` est permet de lier la librairie ```<maths.h>``` (qui ne fait pas partie des librairies standards de C) à la compilation.  
+L'option ```-lm``` permet de lier la librairie ```<maths.h>``` (qui ne fait pas partie des librairies standards de C) à la compilation.  
 - Sur linux, cette option est indispensable,
 - Sur mac, elle provoque une erreur de compilation.
 
@@ -74,11 +74,14 @@ Lorsque la recherche atteint une feuille de l'arbre, elle ajoute le caractère d
 Lorsqu'il n'y a plus de caractère binaire dans la chaine source, la recherche s'arrête et le fichier se ferme.  
   
 
-- **Problème noté :**
+- **Problèmes notés :**
 
-Lors de la *compression*, si la chaine binaire (avant découpage en groupes de 8 caractères) n'est pas un multiple de 8, le programme va compléter le dernier groupe avec les '0' manquants pour arriver à l'octet. Ainsi, lors de la *décompression*, il est probable qu'un caractère non désiré soit ajouté en fin de chaine.  
-Par exemple, si *'lorem.txt'* est compressé en *'lorem.hzip'*, lors de la décompression de *'lorem.hzip'*, le fichier décompressé (ex: *'lorem_decomp.txt'*) comportera un '**r**' tout à la fin de la chaîne, issu d'un "0000" (quatre zéros) ajouté en bout de cahîne binaire au moment de la décompression.  
+    - Lors de la *compression*, si la chaine binaire (avant découpage en groupes de 8 caractères) n'est pas un multiple de 8, le programme va compléter le dernier groupe avec les '0' manquants pour arriver à l'octet. Ainsi, lors de la *décompression*, il est probable qu'un caractère non désiré soit ajouté en fin de chaine.  
+    Par exemple, si *'lorem.txt'* est compressé en *'lorem.hzip'*, lors de la décompression de *'lorem.hzip'*, le fichier décompressé (ex: *'lorem_decomp.txt'*) comportera un '**r**' tout à la fin de la chaîne, issu d'un "0000" (quatre zéros) ajouté en bout de cahîne binaire au moment de la décompression.  
   
+    - Le *taux de compression*, affiché en % à la fin de la compression représente le taux de réduction de la chaine de charactères contenue dans le fichier, et non le fichier en lui même. En prenant l'exemple de la compression du fichier *lorem.txt*, sa taille en octets est la même que celle de son équivalent compressé (à cause de la place occupée par l'arbre en en-tête), et pourant, le taux de compression affiché est inférieur à 100.
+
 ---
+
 Louis Travaux | Edouard Calzado  
 PRE-ING-2

@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
 
 // on appelle [maillon]: [caractere; occurrence][ptr_maillon_suiv] 
 // definir structure caractere + son occurrence ou arbre contenant maillon1 + maillon2 + somme occurrences
@@ -48,5 +49,7 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
 void decompresserDocHuffman(char* fileName, char* newFileName);
 char* convertirIntBinaire(int aConvertir);
 void parcourirArbre(char* chaine_binaire, char* nouveau_nom, maillon ab, maillon ab_temoin, int decoupage);
+
+float poids(char* src, char* cmp);
 
 #endif

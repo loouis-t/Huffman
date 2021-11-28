@@ -31,7 +31,7 @@ L'option ```-lm``` est permet de lier la librairie ```<maths.h>``` (qui ne fait 
 
 Dans un premier temps, le programme ouvre le fichier (en lecture seule) et compte le nombre d'occurrences de chaque caractère (le nombre maximum de caractères est celui de la table ASCII : 128).  
 ![ASCII](./assets/ASCII.png)  
-En même temps, chaque caractère est associé à son occurrence dans une liste chaînée de maillons.  
+En même temps, chaque caractère est associé à son occurrence dans une liste chaînée de maillons (structure contenant entre autres *caractère* et *occurrence*).  
 Cette liste est ensuite ordonnée grâce à un algorithme de tri (tri à bulles): pour cela la *liste chainée de maillons* est convertie en un *tableau de maillons* pour des raisons de simplicité.  
   
 Ex:  

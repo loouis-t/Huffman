@@ -27,7 +27,7 @@ int main(int argc, char *argv[]){
             clock_t current_millis = clock();
             float millis = (current_millis-previous_millis) *1000 / CLOCKS_PER_SEC;
             printf("Terminé (%.3fs).\n", millis/1000);
-            printf("Taux de compression: %.1f%% (/!\\ Ceci est la longueur du fichier, pas son poids).\n", poids(argv[2], nouveau_nom));
+            printf("Taux de compression: %.1f%% (/!\\ Rapport nb caracteres (!= rapport poids)).\n", poids(argv[2], nouveau_nom));
         }
         else if (!strcmp(argv[1], "-d") && argv[2] && argv[3])
         {

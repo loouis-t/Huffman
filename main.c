@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
             clock_t current_millis = clock();
             float millis = (current_millis-previous_millis) *1000 / CLOCKS_PER_SEC;
             printf("Terminé (%.3fs).\n", millis/1000);
-            printf("Taux de compression: %.1f%% (/!\\ Rapport nb caracteres (!= rapport poids)).\n", poids(argv[2], argv[3]));
+            printf("Taux de compression : %.1f%% (/!\\ Rapport nb caracteres (!= rapport poids)).\n", poids(argv[2], argv[3]));
         }
         else if (!strcmp(argv[1], "-d") && argv[2] && argv[3])
         {
@@ -36,8 +36,13 @@ int main(int argc, char *argv[]){
         }
         else if (!strcmp(argv[1], "-h"))
         {
-            printf("-c <fichier_a_compresser> <nom_fichier_sortie> : compresser un fichier renommé en <nom_fichier_sortie>\n");
-            printf("-d <fichier_a_decompresser> <nom_fichier_sortie> : décompresser un fichier renommé en <nom_fichier_sortie>\n");
+            printf("Utilisation : ./huffman [OPTION]... [FICHIER_SOURCE]... [FICHIER_SORTIE]\n");
+            printf("Compresser/Décompresser FICHIER_SOURCE dans FICHIER_SORTIE.\n\n");
+            printf("    -c <fichier_a_compresser> <nom_fichier_sortie> : compresser un fichier renommé en <nom_fichier_sortie>\n");
+            printf("    -d <fichier_a_decompresser> <nom_fichier_sortie> : décompresser un fichier renommé en <nom_fichier_sortie>\n");
+            printf("\nExemples :\n");
+            printf("    ./huffman -c f g    Compresser f dans g\n");
+            printf("    ./huffman -d g f    Décompresser g dans f\n");
         }
         else
         {
@@ -46,7 +51,7 @@ int main(int argc, char *argv[]){
     }
     else
     {
-        printf("huffman: mauvaise utilisation\n");
+        printf("huffman : mauvaise utilisation\n");
         printf("Executez << ./huffman -h >> pour plus d'informations\n");
     }
 

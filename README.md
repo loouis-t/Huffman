@@ -3,10 +3,15 @@
 ## Compilation
 
 ```
-gcc -Wall main.c fonctions.c fonctions.h -o huffman -lm
+gcc -Wall main.c fonctions.c fonctions.h -o huffman -lm     (linux)
+```
+```
+gcc -Wall main.c fonctions.c fonctions.h -o huffman         (macos)
 ```
 
-L'option ```-lm``` est permet de lier la librairie ```<maths.h>``` (qui ne fait pas partie des librairies standards de C) à la compilation.
+L'option ```-lm``` est permet de lier la librairie ```<maths.h>``` (qui ne fait pas partie des librairies standards de C) à la compilation.  
+- Sur linux, cette option est indispensable,
+- Sur mac, elle provoque une erreur de compilation.
 
 ## Execution
 

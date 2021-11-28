@@ -31,9 +31,9 @@ L'option ```-lm``` est permet de lier la librairie ```<maths.h>``` (qui ne fait 
 
 Dans un premier temps, le programme ouvre le fichier en lecture seule et compte le nombre d'occurrence de chaque caractere (le nombre maximum de caractères est celui de la table ASCII, à savoir 128).
 En même temps, chaque caractère est associé à son occurrence dans une liste chainée de maillons.
-Cette liste est ensuite ordonnée grâce à un algoritme de tri (tri à bulles): pour cela la *liste chainée de maillons* est convertie en un *tableau de maillons* pour des raisons de simplicité. 
-Ex: 
-![tableau_maillons](./assets/tableau_maillons.png)
-Ce tableau permet ensuite la construction d'un *arbre de codage*.
+Cette liste est ensuite ordonnée grâce à un algoritme de tri (tri à bulles): pour cela la *liste chainée de maillons* est convertie en un *tableau de maillons* pour des raisons de simplicité.  
 Ex:
-![arbre_codage](./assets/arbre_codage.png)
+![tableau_maillons](./assets/tableau_maillons.png)  
+Ce tableau permet ensuite la construction d'un *arbre de codage*.  
+Ex:
+![arbre_codage](./assets/arbre_codage.png)  

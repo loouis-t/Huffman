@@ -326,7 +326,7 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
         parcoursPrefixe(arbre, binCode, -1, '\0', fichierChar[i]);  
         strcat(chaine_encodee, SUCCESS);
     }
-    // printf("chaine_encodee: %s\n", chaine_encodee); // entete + chaine
+    // printf("chaine_encodee: %s\n", chaine_encodee); // chaine binaire
 
     // dans chaine_caracteres: 0 ou 1 codés sur 8 bits (char: 1 octet)
     unsigned char* chaine_compressee = malloc((strlen(chaine_encodee))*sizeof(unsigned char*)); // unsigned: eviter probleme bit de signe
@@ -340,11 +340,11 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
         for(int j=0; j<8; ++j)
         {
             // printf("%c", chaine_encodee[i+j]);
-            if (chaine_encodee[i+j]!= 0)
+            if (chaine_encodee[i+j] != '\0')
             {
                 // printf("%c : %d | ", chaine_encodee[i+j], chaine_encodee[i+j]-'0');
                 base_dix += (chaine_encodee[i+j]-'0')*pow(2, 7-j);      // 0 ou 1 * 2^j 
-                // printf("%c : %d: %d\n", chaine_encodee[i+j], chaine_encodee[i+j]-'0', base_dix);
+                printf("%c : %d\n", chaine_encodee[i+j], base_dix);
             }
 
         }
@@ -353,6 +353,7 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
         chaine_compressee[len_tab_int+1] = '\0';    // indiquer fin de chaine
         // printf("base 10 dans tableau[%d]: %d\n", len_tab_int, chaine_compressee[len_tab_int]);
         base_dix = 0;
+        puts(" ");
     }
 
     // for(int i=0; i<len_tab_int+1; ++i)
@@ -486,7 +487,7 @@ void decompresserDocHuffman(char* fileName, char* newFileName) {
 
     puts("alloc chaine bin : OK");
 
-    for(int i=0; i<taille_chaine_comp; ++i)       // convertir chaine en binaire
+    for(int i=0; i<taille_chaine_comp/8; ++i)       // convertir chaine en binaire
     {
         // printf("%d ", chaine_compressee[i]);
         // char* chaine_tmp = malloc(sizeof(chaine_bin));
@@ -502,7 +503,13 @@ void decompresserDocHuffman(char* fileName, char* newFileName) {
     // free(chaine_compressee);
 
     // decoder la chaine binaire
-    parcourirArbre(chaine_bin, newFileName, ab, ab);
+    printf("len_chaine_bin: %ld\n", strlen(chaine_bin));
+    // printf("chaine_bin: %s\n", chaine_bin);
+
+    while(strlen(chaine_bin) > 0)
+    {
+        parcourirArbre(chaine_bin, newFileName, ab, ab, 0);
+    }
 
 }
 
@@ -519,11 +526,10 @@ char* convertirIntBinaire(int aConvertir) {
         strcpy(chaine_tmp, chaineBinaire);                          // copier dans chaine_tmp pour retenir valeur
         chaineBinaire[0] = '\0';                                    // sprintf concatene toujours dans char* vide
         sprintf(chaineBinaire, "%d%s", (aConvertir%2), chaine_tmp); // ajouter '1' (char) quand 1 (int)
-        // chaineBinaire[i] = aConvertir%2;
         aConvertir /= 2;
     }
 
-    while (strlen(chaineBinaire) <= 7)
+    while (strlen(chaineBinaire) < 8)
     {
         char* chaine_tmp = malloc(sizeof(chaineBinaire));
         strcpy(chaine_tmp, chaineBinaire);                          // copier dans chaine_tmp pour retenir valeur
@@ -532,46 +538,40 @@ char* convertirIntBinaire(int aConvertir) {
         free(chaine_tmp);
     }
 
+    // printf("%s\n", chaineBinaire);
+
     // printf("chaine binaire: %s\n", chaineBinaire);
     return chaineBinaire;
 }
 
-void parcourirArbre(char* chaine_binaire, char* nouveau_nom, maillon ab, maillon ab_temoin) {
-    // printf("%s\n", chaine_decomp); 
-    if (chaine_binaire[0] != '\0')
+void parcourirArbre(char* chaine_binaire, char* nouveau_nom, maillon ab, maillon ab_temoin, int decoupage) {
+    // printf("%s\n", chaine_decomp);
+    if (getCaractere(ab) != -1)
     {
-        if (getCaractere(ab) != -1)
+        FILE* fichier_decompresse = fopen(nouveau_nom, "a+");
+        fputc(getCaractere(ab), fichier_decompresse);
+        fclose(fichier_decompresse);
+        
+        if (chaine_binaire[0] != '\0' && decoupage < 4096)
         {
-            // char* chaine_temp = malloc((strlen(chaine_decomp)+1)*sizeof(char*));                     // sprintf necessite une destination vide
-            // printf("%ld\n", strlen(chaine_decomp));
-            // chaine_temp[0] = '\0';                                                  // init chaine pour sprintf
-            // printf("caractere: %c\n", getCaractere(ab));
-
-            // **************** REMPLACER sprintf PAR SOLUTION POUR EVITER PROBLEMES DE MALLOC (chaine_decomp[i] ?) ***********************
-
-            // chaine_decomp[pos_dans_decomp] = ;
-            // chaine_decomp[pos_dans_decomp+1] = '\0';
-            FILE* fichier_decompresse = fopen(nouveau_nom, "a+");
-            fputc(getCaractere(ab), fichier_decompresse);
-            fclose(fichier_decompresse);
-            
-            // sprintf(chaine_temp, "%s%c%c", chaine_decomp, getCaractere(ab), '\0');  // concatener nouveau caractere avec caracteres precedents (+ signal de fin de chaine)
-            // printf("chaine: %s\n", chaine_decomp);
-            parcourirArbre(chaine_binaire, nouveau_nom, ab_temoin, ab_temoin);
+            parcourirArbre(chaine_binaire, nouveau_nom, ab_temoin, ab_temoin, decoupage);
         }
-        else
+    }
+    else
+    {
+        if (chaine_binaire[0] != '\0')
         {
             if (chaine_binaire[0] == '1')
             {
                 // printf("bin: %c\n", chaine_binaire[pos_dans_chaine]);
                 memmove(chaine_binaire, chaine_binaire+1, strlen(chaine_binaire));
-                parcourirArbre(chaine_binaire, nouveau_nom, getFilsDroit(ab), ab_temoin);
+                parcourirArbre(chaine_binaire, nouveau_nom, getFilsDroit(ab), ab_temoin, ++decoupage);
             }
             else
             {
                 // printf("bin: %c\n", chaine_binaire[pos_dans_chaine]);
                 memmove(chaine_binaire, chaine_binaire+1, strlen(chaine_binaire));
-                parcourirArbre(chaine_binaire, nouveau_nom, getFilsGauche(ab), ab_temoin);
+                parcourirArbre(chaine_binaire, nouveau_nom, getFilsGauche(ab), ab_temoin, ++decoupage);
             }
         }
     }

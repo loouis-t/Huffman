@@ -47,6 +47,6 @@ void creerDocHuffman(maillon liste_triee, maillon arbre, char* fichierChar, char
 
 void decompresserDocHuffman(char* fileName, char* newFileName);
 char* convertirIntBinaire(int aConvertir);
-void parcourirArbre(char* chaine_binaire, char* nouveau_nom, maillon ab, maillon ab_temoin);
+void parcourirArbre(char* chaine_binaire, char* nouveau_nom, maillon ab, maillon ab_temoin, int decoupage);
 
 #endif

@@ -34,12 +34,12 @@ Dans un premier temps, le programme ouvre le fichier (en lecture seule) et compt
 En même temps, chaque caractère est associé à son occurrence dans une liste chaînée de maillons.  
 Cette liste est ensuite ordonnée grâce à un algorithme de tri (tri à bulles): pour cela la *liste chainée de maillons* est convertie en un *tableau de maillons* pour des raisons de simplicité.  
   
-Ex:
+Ex:  
 ![tableau_maillons](./assets/tableau_maillons.png)  
   
 Ce tableau permet ensuite la construction d'un *arbre de codage*.  
   
-Ex:
+Ex:  
 ![arbre_codage](./assets/arbre_codage.png)  
   
 Cet arbre est placé en en-tête d'un nouveau fichier: c'est un fichier binaire, mais nous avons choisi de ne pas encoder l'en-tête, afin de faciliter la décompression.  

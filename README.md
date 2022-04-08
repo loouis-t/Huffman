@@ -82,5 +82,5 @@ Lorsqu'il n'y a plus de caractère binaire dans la chaine source, la recherche s
 
 ---
 
-Louis Travaux | Edouard Calzado  
+Louis Travaux
 PRE-ING-2
